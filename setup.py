@@ -20,7 +20,7 @@ setup(name='credopy',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
-          'Intended Audience :: Developers :: System Administrators',
+          'Intended Audience :: Developers',
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python :: 3',
           'Topic :: Security',
