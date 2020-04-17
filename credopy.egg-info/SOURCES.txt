@@ -1,0 +1,10 @@
+README.md
+setup.py
+credopy/credopy.py
+credopy.egg-info/PKG-INFO
+credopy.egg-info/SOURCES.txt
+credopy.egg-info/dependency_links.txt
+credopy.egg-info/entry_points.txt
+credopy.egg-info/not-zip-safe
+credopy.egg-info/requires.txt
+credopy.egg-info/top_level.txt
