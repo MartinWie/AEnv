@@ -373,7 +373,7 @@ def app():
 
     if(args != []):
         if(isWindows == False):
-            os.system('eval ' + ' '.join(args))
+            os.system('eval ' + '"' +  ' '.join(args) + '"')
         else:
             os.system('call ' + ' '.join(args))
 
