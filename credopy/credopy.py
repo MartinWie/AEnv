@@ -350,8 +350,8 @@ def app():
 
         for r in response['Parameters']:
             if(quietMode == False):
-                print("SECRET_" + os.getenv('SERVICE').upper() + "_" + r['Name'].split('/')[-2].upper() + "_" + r['Name'].split('/')[-1].upper())
-            os.environ["SECRET_" + os.getenv('SERVICE').upper() + "_" + r['Name'].split('/')[-2].upper() + "_" + r['Name'].split('/')[-1].upper()] = r['Value']
+                print("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/","_").upper())
+            os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/","_").upper()] = r['Value']
         
         while(True):
             if('NextToken' not in response):
@@ -359,8 +359,8 @@ def app():
             response  = clientSSMMFA.get_parameters_by_path(Path=ssmPath,Recursive=True,WithDecryption=True,NextToken=response['NextToken'])
             for r in response['Parameters']:
                 if(quietMode == False):
-                    print("SECRET_" + os.getenv('SERVICE').upper() + "_" + r['Name'].split('/')[-2].upper() + "_" + r['Name'].split('/')[-1].upper())
-                os.environ["SECRET_" + os.getenv('SERVICE').upper() + "_" + r['Name'].split('/')[-2].upper() + "_" + r['Name'].split('/')[-1].upper()] = r['Value']
+                    print("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/","_").upper())
+                os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/","_").upper()] = r['Value']
 
 
     if(os.getenv('PYDO_QUIET') == None and os.getenv('CREDO_NO_AWS') == 'true'):
