@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='credopy',
-      version='1.0.0',
+      version='1.0.1',
       description='A Python 3 tool to fetch secure strings from aws parameter store and injecting those into environment variables.',
       long_description=readme(),
       long_description_content_type='text/markdown',
