@@ -6,9 +6,11 @@ Working with Credentials can be fun, but from a security perspective, most of th
 If you're using the AWS cloud you found the right repository!
 
 CredoPy aka pydo is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
+
 And because the parameter store supports paths you can define different services with different environments.
 
 For example:
+
 ```
 /<Environment>/<KotlinApp1>/
 
@@ -18,13 +20,19 @@ For example:
 #or
 /Prod/CustomerManagement/DB/PASSWORD
 ```
+
 With both parameters, your "CustomerManagement" application/service (launched with pydo) could now access the database with the provided username and password.
 
 ## Format for these environment variables:
+
 Every environment variable that is loaded with pydo starts with "SECRET_".
+
 Then the service-name and path, separated by underliners.
+
 (of course in upper case)
+
 For example: 
+
 ```
 SECRET_CUSTOMERMANAGEMENT_DB_USER
 ```
@@ -32,43 +40,60 @@ SECRET_CUSTOMERMANAGEMENT_DB_USER
 More about environment variables: [Guide to Unix/Environment Variables](https://en.wikibooks.org/wiki/Guide_to_Unix/Environment_Variables)
 
 This is maybe made more clear by the following example:
+
 ```
 /Prod/CustomerManagement/DB/USER
 ```
+
 would be accessible with:
+
 ```
 SECRET_CUSTOMERMANAGEMENT_DB_USER
 ```
+
 or
+
 ```
 /Prod/CustomerManagement/DB/PASSWORD
 ```
+
 would be accessible with:
+
 ```
 SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD
 ```
 
 ## Environments
+
 We now talked a lot about environments, but how can pydo differ between different environments like dev, test, or prod?
+
 Quite simply, you tell it!
 
 **Parameterstore:**
 
 As already mentioned you Define the environment as the first section.
+
 Let's take the previous example:
+
 ```
 /Prod/CustomerManagement/DB/PASSWORD
 ```
+
 here "Prod" is our environment for the database(DB) password (PASSWORD) of our CustomerManagement service/application, but we could easily also set this for our test environment like this:
+
 ```
 /Test/CustomerManagement/DB/PASSWORD
 ```
+
 (When creating new parameters don't forget to create them as "SecureString's" ;) )
 
 Bonus content: 
+
 Converting parameter store strings to secure strings
 Found this in my old files, before using this **test and make sure it really works** but with this snippet, you should be able to convert every normal parameter store string to a secure string.
+
 **No guarantee for functionality, make sure you have a backup of the parameter store variables**
+
 ```
 import boto3
 client = boto3.client('ssm')
@@ -119,10 +144,13 @@ for name in dic:
 **Client/You**
 
 With
+
 ```
 pydo -e <env>
 ```
+
 you can launch pydo for every in the parameterstore defined environment.
+
 If you don't set any pydo swtiches to "Dev"
 
 **AWS Server**
@@ -131,14 +159,19 @@ when pydo runs on an aws machine you could run it with "-e <env>" but this is ra
 
 
 ## How to access the environment variables
+
 To access those environment variables you have to run your application/service with pydo.
+
 ```
 pydo java -jar service.jar
 //or
 pydo python service2.py
 ```
+
 Now these two services have all environment variables for their service and environment available and can work with them here are two easy examples:
+
 **Python:**
+
 ```
 import os
 os.getenv('SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD')
@@ -148,45 +181,60 @@ os.getenv('SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD')
 
 header = { 'Api-Key' : os.getenv('SECRET_CUSTOMERMANAGEMENT_API_KEY') }
 ....
+
 ```
+
 **Kotlin:**
+
 ```
 val envVar : String? = System.getenv("varname")
 //there are some other examples feel free to look into https://stackoverflow.com/ but I like this approach because environment variables can be null, bus null handling probably comes down to your use-case/coding style.
 ```
 
 ## Authentication
+
 **AWS Server:**
 
 Easy!
 Done by boto3 automatically uses in instance role defined permissions.
+
 (Details "Permissions" section)
 
 **Developer:**
 
 boto3 uses the aws CLI's authentication so make sure you set this up before ;)
+
 [AWS CLI](https://aws.amazon.com/cli/)
+
 By default, pydo uses the aws CLI default profile, but of course, you can choose the profile, that you want to use, simply do:
+
 ```
 pydo -p <awscli profile name>
 #or 
 pydo -h 
 #to see more configuration options
 ```
+
 (More details in the "Usage" section)
 
 **MFA**
 
 First of all multi-factor authentication is highly suggested!
+
 https://lmgtfy.com/?q=why+mfa+is+important
 
 Ok, all jokes aside especially for production parameters your IAM users should require MFA authentication at least for production parameters.
+
 So even when a password/account from one of your users gets compromised and let's be realistic here, this will definitely happen to your company/project so better prepare for that event!
+
 "How can we mitigate the damage" 
+
 At least in my humble opinion, this should be a "better be safe than sorry" point.
+
 Especially for your production systems!
 
 Pydo supports multiple MFA options, details in the "Usage" section, here the short overview:
+
 ```
 # normal virtual mfa token:
 pydo -t <TOKEN>
@@ -200,12 +248,16 @@ $ Please enter token:
 
 #Yubikey Authenticator:
 pydo -Y
+
 ```
+
 At the moment aws-CLI only supports virtual MFA devices(so the -Y option uses the virtual MFA function of your yubikey (ykman) as a workaround until awscli supports hardware tokens ), but feel free to drop a comment or investigate here:
+
 https://github.com/aws/aws-cli/issues/3607
 
 
 ## Permissions: IAM policies / Instance roles
+
 | Permission | Used in the code | Documentation | Comment 
 | :- | :- | :- | :-
 | "ec2:DescribeTags" | clientEC2.describe_tags() | https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeTags.html |
@@ -213,25 +265,35 @@ https://github.com/aws/aws-cli/issues/3607
 | "sts:GetSessionToken" | clientSTS.get_session_token() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html |
 | "ssm:GetParametersByPath" | clientSSMMFA.get_parameters_by_path() | https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-access.html |
 | "iam:ListMFADevices" | boto3.client('iam').list_mfa_devices() | https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_iam_mfa-selfmanage.html | Optional! (At the moment not in use but as soon aws API supports hardware tokens this can be enabled to let pydo support hardware MFA's) 
+
 **tldr Minimal permissions:**
 
 “ec2:DescribeTags”
+
 “sts:GetSessionToken”
+
 “ssm:GetParametersByPath”
 
 ## Setup
+
 1. Define environment variables as described in **Format for these environment variables**
 2. Set environment tag's for your instances as described in **AWS Server**
-3. Create/adjust your instance roles/IAM roles with proper permissions as described in **Permissions**
+3. Create/adjust your instance roles/IAM roles with proper permissions as described in 
+
+**Permissions**
 
 
 ## Installation
+
 * Install python3 and pip 
 * install and setup boto3:
+
 ```
 pip install awscli --user
 ```
+
 * Install CredoPy aka. pydo:
+
 ```
 pip install credopy
 ```
@@ -241,7 +303,9 @@ pip install credopy
 ```
 pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 ```
+
 **Options:**
+
 | Option | explination | sample | comment 
 | :- | :- | :- | :-
 |-h | Shows help | pydo -h |
@@ -263,28 +327,40 @@ pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 Note: **It may be required to double escaping.**
 
 Examples:
+
 **Linux:**
+
 pydo echo '$SECRET_CUSTOMERSERVICE_UI_URL'
+
 or
+
 **Windows:**
+
 pydo echo %SECRET_CUSTOMERSERVICE_UI_URL%  
+
 **Mac:**
+
 pydo "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
 
 **Note** the quoting of the variable.
 
 ## Todo
+
 * Load service name also from aws tags
 * Enhance local profile/config setup/usage
 * Describe how to make prod parameters only accessible with MFS auth and the rest without
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
 
 ## Acknowledgments 
+
 **Inspired by:**
+
 * **Gunnar Zarncke** - [LinkedIn](https://www.linkedin.com/in/gunnar-zarncke-952134163/) and his/troy gmbh's opensource credo projekt - [Git Credo](https://bitbucket.org/infomadis/troy-credo-aws/)
 
 **Bug reports:**
+
 * **[Arif PEHLİVAN](https://github.com/mrpehlivan)** 
+
 * **[Carlos Freund](https://github.com/happyherp)**
 
 
