@@ -374,6 +374,13 @@ pip install credopy
 * **[Carlos Freund](https://github.com/happyherp)**
 
 
+## Donations
+
+If you want to tip me or simply want to say thanks:
+
+[Paypal](https://www.paypal.me/MartinWiechmann)
+
+
 ## License
 
 MIT [Link](https://github.com/MartinWie/CredoPy/blob/master/LICENSE)
