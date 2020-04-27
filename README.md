@@ -30,6 +30,8 @@ pydo -e Prod -s CustomerManagement echo '$SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD'
 
 With both parameters, your "CustomerManagement" application/service (launched with pydo) could now access the database with the provided username and password.
 
+Details at: [How to access the environment variables](https://github.com/MartinWie/CredoPy#how-to-access-the-environment-variables)
+
 
 ## Usage 
 
