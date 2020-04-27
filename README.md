@@ -155,7 +155,7 @@ If you don't set any pydo swtiches to "Dev"
 
 **AWS Server**
 
-when pydo runs on an aws machine you could run it with "-e <env>" but this is rather inconvenient. So pydo queries the instance tags and searches for the key "environment" and uses its value as the current environment. If the environment tag is not set and you did not provide an environment with "-e" pydo automatically defaults to "Dev"
+when pydo runs on an aws machine you could run it with "-e \<env>" but this is rather inconvenient. So pydo queries the instance tags and searches for the key "environment" and uses its value as the current environment. If the environment tag is not set and you did not provide an environment with "-e" pydo automatically defaults to "Dev"
 
 
 ## How to access the environment variables
@@ -310,19 +310,19 @@ pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 | :- | :- | :- | :-
 |-h | Shows help | pydo -h |
 |-i | Starts pydo in interactive mode | pydo -i | Gives you a command line that you can interact with |
-|-s <service/application> | For which service should the environment variables be loaded? | pydo -s CustomerService
+|-s \<service/application> | For which service should the environment variables be loaded? | pydo -s CustomerService
 |-S | Sets a default service for pydo and writes it to a config file | pydo -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
 |-n | do not query credentials at all  | pydo -n |
-|-e <env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | pydo -e Prod | 
-|-t <2fa key> | Takes the 2FA key from your aws account | pydo -t 987123
+|-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | pydo -e Prod | 
+|-t \<2fa key> | Takes the 2FA key from your aws account | pydo -t 987123
 |-T | Lets you type in the 2FA key from your aws account during runtime | pydo -T | When you run your command pydo will ask for the token |
 |-Y | Uses Yubikey for MFA auth | pydo -Y | During runtime pydo will use ykman to fetch the MFA-Key from your yubikey
-|-r <region> | Overwrites temporary the awscli default region | pydo -r eu-central-1 | Pydo will use the given region for example Frankfurt
+|-r \<region> | Overwrites temporary the awscli default region | pydo -r eu-central-1 | Pydo will use the given region for example Frankfurt
 |-q | Quiet mode (less output) | pydo -q |
-|-u <aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -u user@example.de |
-|-a <account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -a 999999999999 | 
-|-p <aws profile> | If multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile | pydo -p testUser1
-|<command> | Is the command to execute with environment variables injected. | pydo code | Will run VS Code with access to given environment variables
+|-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -u user@example.de |
+|-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -a 999999999999 | 
+|-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile | pydo -p testUser1
+|\<command> | Is the command to execute with environment variables injected. | pydo code | Will run VS Code with access to given environment variables
 
 Note: **It may be required to double escaping.**
 
