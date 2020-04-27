@@ -7,6 +7,7 @@ If you're using the AWS cloud you found the right repository!
 
 CredoPy aka pydo is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
 And because the parameter store supports paths you can define different services with different environments.
+
 For example:
 ```
 /<Environment>/<KotlinApp1>/
