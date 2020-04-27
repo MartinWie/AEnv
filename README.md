@@ -19,8 +19,12 @@ For example:
 
 #or
 /Prod/CustomerManagement/DB/PASSWORD
+```
 
-#output CustomerManagement DB PASSWORD for PROD:
+Output these example data (The database password for CustomerManagement in production ):
+
+
+```
 pydo -e Prod -s CustomerManagement echo '$SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD'
 ```
 
