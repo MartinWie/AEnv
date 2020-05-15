@@ -1,9 +1,18 @@
 # CredoPy - pydo!
 [![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/CredoPy)](https://github.com/MartinWie/CredoPy/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
-### No passwords in code!
+## No passwords in code!
 
-Make your company more secure using the "troy password credo"! ("never store credentials unencrypted!")
+Make your company more secure using the "troy password credo"! 
+
+Easier said than done working with credentials can get very messy and leed to huge security and data protection problems. So while working at [troy gmbh](https://www.linkedin.com/company/troy-gmbh/) it became clear that we had do define some fundamental rules to maintain a high level of security while fast growth phases. This brought up the "troy password credo".
+
+### troy password credo:
+You may ask what "What is the famous troy password credo?"
+It's very simple: **Never** store credentials unencrypted!
+
+
+## Let's get started
 
 Working with Credentials can be fun, but from a security perspective, most of the time it isn't! Especially if you have multiple systems and different environments.
 
