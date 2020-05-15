@@ -1,4 +1,4 @@
-# CredoPy - pydo!
+# CredoPy aka pydo!
 [![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/CredoPy)](https://github.com/MartinWie/CredoPy/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 ## No passwords in code!
@@ -18,7 +18,7 @@ Working with Credentials can be fun, but from a security perspective, most of th
 
 If you're using the AWS cloud you found the right repository!
 
-CredoPy aka pydo is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
+Pydo is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
 
 And because the parameter store supports paths you can define different services with different environments.
 
@@ -362,7 +362,7 @@ https://github.com/aws/aws-cli/issues/3607
 pip install awscli --user
 ```
 
-* Install CredoPy aka. pydo:
+* Install pydo:
 
 ```
 pip install credopy
