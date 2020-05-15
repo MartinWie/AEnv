@@ -1,6 +1,10 @@
 # CredoPy - pydo!
 [![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/CredoPy)](https://github.com/MartinWie/CredoPy/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
+### No passwords in code!
+
+Make your company more secure using the "troy password credo"! ("never store credentials unencrypted!")
+
 Working with Credentials can be fun, but from a security perspective, most of the time it isn't! Especially if you have multiple systems and different environments.
 
 If you're using the AWS cloud you found the right repository!
