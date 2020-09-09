@@ -23,6 +23,7 @@ def help():
   -u sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws)
   -a sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws)
   -p if multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile
+  -c container mode(enable this to make pydo work in ecs and codebuild)
   <command> is the command to execute with environment variables injected.
   Note that parameter substitution is performed. It may be required to double escape.
 
@@ -84,6 +85,9 @@ def check(argv):
             continue
         elif opt == '-s':
             os.environ['SERVICE'] = arg
+            continue
+        elif opt == '-c':
+            os.environ['CONTAINERMODE'] = 'true'
             continue
         elif opt == '-S':
             pydoConfigWrite('DEFAULTSERVICE',arg)
@@ -183,6 +187,9 @@ def getSessionData():
 
 def printInfo():
         print("ENVIRONMENT: " + os.getenv('ENVIRONMENT'))
+
+        if (os.getenv('CONTAINERMODE') == 'true'):
+            print('Container mode enabled!')
         
         if (os.getenv('CREDO_NO_AWS') == 'true'):
             print('Skipped fetching parameters from AWS.')
@@ -230,10 +237,10 @@ def getBotoClients():
     
     if(useSession):
         try:
-            if bool(sessionProfileName):
-                session = boto3.Session(profile_name=sessionProfileName,region_name=sessionRegion)
-            else:
+            if (os.getenv('CONTAINERMODE') == 'true'):
                 session = boto3.Session(region_name=sessionRegion)
+            else:
+                session = boto3.Session(profile_name=sessionProfileName,region_name=sessionRegion)
             os.environ['SESSION_REGION_NAME'] = session.region_name
             clientSTS = session.client('sts')
             clientEC2 = session.client('ec2')
