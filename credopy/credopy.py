@@ -230,7 +230,10 @@ def getBotoClients():
     
     if(useSession):
         try:
-            session = boto3.Session(profile_name=sessionProfileName,region_name=sessionRegion)
+            if bool(sessionProfileName):
+                session = boto3.Session(profile_name=sessionProfileName,region_name=sessionRegion)
+            else:
+                session = boto3.Session(region_name=sessionRegion)
             os.environ['SESSION_REGION_NAME'] = session.region_name
             clientSTS = session.client('sts')
             clientEC2 = session.client('ec2')
