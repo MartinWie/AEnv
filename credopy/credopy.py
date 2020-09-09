@@ -39,7 +39,7 @@ def help():
 
 #try-catch for wrong parameter usage
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'S:s:t:u:Tnp:ia:qr:ue:hcY')
+    opts, args = getopt.getopt(sys.argv[1:], 'S:s:t:u:Tnp:ia:qr:ue:hYc')
 except:
     help()
     sys.exit()
