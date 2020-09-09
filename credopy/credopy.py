@@ -237,8 +237,8 @@ def getBotoClients():
             os.environ['SESSION_REGION_NAME'] = session.region_name
             clientSTS = session.client('sts')
             clientEC2 = session.client('ec2')
-        except:
-            print("Wrong profile name and/or region!")
+        except Exception as e:
+            print("Wrong profile name and/or region! Exception: " + e)
             sys.exit()
     else:
         clientSTS = boto3.client('sts',region_name=sessionRegion)
