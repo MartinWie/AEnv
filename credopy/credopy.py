@@ -238,7 +238,8 @@ def getBotoClients():
     if(useSession):
         try:
             if (os.getenv('CONTAINERMODE') == 'true'):
-                session = boto3.Session(region_name=sessionRegion)
+                containerCredentials = urllib.request.urlopen('http://169.254.170.2' + os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"),timeout=2).read().decode()
+                session = boto3.Session(region_name=sessionRegion,aws_access_key_id=containerCredentials["AccessKeyId"],aws_secret_access_key=containerCredentials["SecretAccessKey"])
             else:
                 session = boto3.Session(profile_name=sessionProfileName,region_name=sessionRegion)
             os.environ['SESSION_REGION_NAME'] = session.region_name
