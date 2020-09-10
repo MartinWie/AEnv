@@ -70,7 +70,7 @@ pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 |-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -u user@example.de |
 |-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -a 999999999999 | 
 |-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile | pydo -p testUser1
-|-c \<aws profile> | Container mode(enable this to make pydo work in ecs and codebuild) | pydo -c
+|-c \<aws profile> | Container mode(enable this to make pydo work in ecs and codebuild) | pydo -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
 |\<command> | Is the command to execute with environment variables injected. | pydo code | Will run VS Code with access to given environment variables
 
 Note: **It may be required to double escaping.**
