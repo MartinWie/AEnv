@@ -70,6 +70,7 @@ pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 |-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -u user@example.de |
 |-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -a 999999999999 | 
 |-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile | pydo -p testUser1
+|-c \<aws profile> | Container mode(enable this to make pydo work in ecs and codebuild) | pydo -c
 |\<command> | Is the command to execute with environment variables injected. | pydo code | Will run VS Code with access to given environment variables
 
 Note: **It may be required to double escaping.**
@@ -372,6 +373,7 @@ pip install credopy
 ## Todo
 
 * Load service name also from aws tags
+* Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
 * Describe how to make prod parameters only accessible with MFS auth and the rest without
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
