@@ -5,10 +5,10 @@
 
 Make your company more secure using the "troy password credo"! 
 
-Easier said than done working with credentials can get very messy and leed to huge security and data protection problems. So while working at [troy gmbh](https://www.linkedin.com/company/troy-gmbh/) it became clear that we had do define some fundamental rules to maintain a high level of security while fast growth phases. This brought up the "troy password credo".
+Easier said than done working with credentials can get very messy and lead to huge security and data protection problems. So while working at [troy gmbh](https://www.linkedin.com/company/troy-gmbh/) it became clear that we had to define some fundamental rules to maintain a high level of security during fast growth phases. This brought up the "troy password credo".
 
 ### troy password credo:
-You may ask what "What is the famous troy password credo?"
+You may ask "What is the famous troy password credo?"
 It's very simple: **Never** store credentials unencrypted!
 
 
