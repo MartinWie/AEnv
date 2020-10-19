@@ -377,7 +377,7 @@ pip install credopy
 * Enhance local profile/config setup/usage
 * Describe how to make prod parameters only accessible with MFS auth and the rest without
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
- * Load environment tags for ECS container
+ * Load environment tags for ECS container / for task
  * Describe the "troy credential credo"
 
 ## Acknowledgments 
