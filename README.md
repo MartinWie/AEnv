@@ -1,6 +1,8 @@
 # CredoPy aka pydo!
 [![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/CredoPy)](https://github.com/MartinWie/CredoPy/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
+![CredoPy aka pydo](https://github.com/MartinWie/CredoPy/blob/master/credopy_logo.png)
+
 ## No passwords in code!
 
 Make your company more secure using the "troy password credo"! 
