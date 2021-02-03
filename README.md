@@ -374,6 +374,7 @@ pip install credopy
 
 ## Todo
 
+* Add an option to just authenticate a session with MFA(currently, this can be done by running "pydo -Y -q -i") 
 * Load service name also from aws tags
 * Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
