@@ -382,6 +382,11 @@ pip install credopy
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
  * Load environment tags for ECS container / for task
  * Describe the "troy credential credo"
+* Add proper requirements.txt with https://github.com/Yubico/yubikey-manager
+* ykman deprecated message + message after ykman auth
+* feature to refresh env variables in the background
+* fix windows installation(v1 works, the newest not!)
+* document how to enforce MFA / pydo for (all) cli commands
 
 ## Acknowledgments 
 
