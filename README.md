@@ -387,6 +387,7 @@ pip install credopy
 * feature to refresh env variables in the background
 * fix windows installation(v1 works, the newest not!)
 * document how to enforce MFA / pydo for (all) cli commands
+* Add testing https://pydantic-docs.helpmanual.io/
 
 ## Acknowledgments 
 
