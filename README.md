@@ -388,6 +388,7 @@ pip install credopy
 * fix windows installation(v1 works, the newest not!)
 * document how to enforce MFA / pydo for (all) cli commands
 * Add testing https://pydantic-docs.helpmanual.io/
+* Add feature for only loading certain variables to speed up loading
 
 ## Acknowledgments 
 
