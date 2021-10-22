@@ -61,8 +61,8 @@ def check(argv):
             os.environ['USE_YUBI'] = 'true'
             continue
         elif opt == '-n':
-            #Caution! This is set to the string "true" not an actual boolean because we use Environment variables instead of normal vars. 
-            #(This is done to ensure compatibility to the original credo / systems that worked with credo)
+            # Caution! This is set to the string "true" not an actual boolean because we use Environment variables instead of normal vars.
+            # (This is done to ensure compatibility to the original credo / systems that worked with credo)
             os.environ['PYDO_NO_AWS'] = 'true'
             continue
         elif opt == '-q':
@@ -165,17 +165,24 @@ def getSessionData():
     #get current default region/profil name
     tmpSession = boto3.session.Session()
     if (tmpSession.region_name == None):
-        #did not found a better way to get current region if run on an ec2 instance definitely open for more elegant approaches  
-        sessionRegion = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/placement/availability-zone',timeout=2).read().decode()[:-1]
+        # Did not found a better way to get current region
+        # If run on an ec2 instance definitely open for more elegant approaches
+        sessionRegion = urllib.request.urlopen(
+            'http://169.254.169.254/latest/meta-data/placement/availability-zone',
+            timeout=2
+        ).read().decode()[:-1]
         
-        #when we are here we know, that we are on an ec2 instance so we also can fetch the right instance-id
-        os.environ['INSTANCEID']= urllib.request.urlopen('http://169.254.169.254/latest/meta-data/instance-id',timeout=2).read().decode()
+        # When we are here we know, that we are on an ec2 instance so we also can fetch the right instance-id
+        os.environ['INSTANCEID'] = urllib.request.urlopen(
+            'http://169.254.169.254/latest/meta-data/instance-id',
+            timeout=2
+        ).read().decode()
         sessionProfileName = None
     else:
         sessionRegion = tmpSession.region_name
         sessionProfileName = tmpSession.profile_name
 
-    #check if custom sessiondata was provided
+    # Check if custom sessiondata was provided
     if(os.getenv('AWS_REGION') != None):
         sessionRegion = os.getenv('AWS_REGION')
 
@@ -238,8 +245,15 @@ def getBotoClients():
     if(useSession):
         try:
             if (os.getenv('CONTAINERMODE') == 'true'):
-                containerCredentials = urllib.request.urlopen('http://169.254.170.2' + os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"),timeout=2).read().decode()
-                session = boto3.Session(region_name=sessionRegion,aws_access_key_id=containerCredentials["AccessKeyId"],aws_secret_access_key=containerCredentials["SecretAccessKey"])
+                containerCredentials = urllib.request.urlopen(
+                    'http://169.254.170.2' + os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"),
+                    timeout=2
+                ).read().decode()
+                session = boto3.Session(
+                    region_name=sessionRegion,
+                    aws_access_key_id=containerCredentials["AccessKeyId"],
+                    aws_secret_access_key=containerCredentials["SecretAccessKey"]
+                )
             else:
                 session = boto3.Session(profile_name=sessionProfileName,region_name=sessionRegion)
             os.environ['SESSION_REGION_NAME'] = session.region_name
@@ -286,10 +300,10 @@ def app():
             sessionSeconds = 900
             
         try:
-            #When hardware MFAs are supported use this to be flexible whether use hard- or software-MFA:
-            #serialNumber = boto3.client('iam').list_mfa_devices()['MFADevices'][0]['SerialNumber']
+            # When hardware MFAs are supported use this to be flexible whether use hard- or software-MFA:
+            # serialNumber = boto3.client('iam').list_mfa_devices()['MFADevices'][0]['SerialNumber']
 
-            #until then use this, because it is faster because it does not need to fetch the MFA device for the user
+            # Until then use this, it is faster because it does not need to fetch the MFA device for the user
             serialNumber = "arn:aws:iam::" + awsAccount + ":mfa/" + awsUsername
             
             stsSessionData = clientSTS.get_session_token(
@@ -367,7 +381,12 @@ def app():
         while(True):
             if('NextToken' not in response):
                 break
-            response  = clientSSMMFA.get_parameters_by_path(Path=ssmPath,Recursive=True,WithDecryption=True,NextToken=response['NextToken'])
+            response = clientSSMMFA.get_parameters_by_path(
+                Path=ssmPath,
+                Recursive=True,
+                WithDecryption=True,
+                NextToken=response['NextToken']
+            )
             for r in response['Parameters']:
                 if(quietMode == False):
                     print("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/","_").upper())
