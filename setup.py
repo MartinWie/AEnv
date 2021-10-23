@@ -13,10 +13,10 @@ setup(name='credopy',
       long_description_content_type='text/markdown',
       download_url='https://github.com/MartinWie/CredoPy/archive/1.0.9.tar.gz',
       entry_points={
-        'console_scripts': [
-            'pydo=credopy.credopy:main'
-        ]
-    },
+          'console_scripts': [
+              'pydo=credopy.credopy:main'
+          ]
+      },
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Environment :: Console',
@@ -32,6 +32,9 @@ setup(name='credopy',
       keywords='aws credo security parameterstore ssm cloud password pydo credopy',
       license='MIT',
       packages=['credopy'],
-      install_requires=['boto3'],
+      install_requires=[
+          'boto3',
+          'yubikey-manager'
+      ],
       include_package_data=True,
       zip_safe=False)
