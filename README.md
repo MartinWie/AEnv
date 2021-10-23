@@ -406,7 +406,6 @@ pip install credopy
 
 ## Todo
 
-* Add proper requirements.txt with https://github.com/Yubico/yubikey-manager
 * fix windows installation(v1 works, the newest not!)
 * document how to enforce MFA / pydo for only prod env variables
 * Load service name also from aws tags
