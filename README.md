@@ -403,7 +403,6 @@ pip install credopy
 
 ## Todo
 
-* fix windows installation(v1 works, the newest not!)
 * document how to enforce MFA / pydo for only prod env variables
 * Load service name also from aws tags
 * Add more information about container mode and necessary IAM permissions
