@@ -290,7 +290,7 @@ def app():
     if os.getenv('USE_YUBI') == 'true':
         # With ykman as a workaround for missing hardware token integration from aws
         awsUsername, awsAccount = getAWSUsernameAndAccount(clientSTS)
-        os.environ['TOKEN'] = os.popen('ykman oath code ' + awsUsername).read().split(' ')[-1][:-1]
+        os.environ['TOKEN'] = os.popen('ykman oath accounts code ' + awsUsername).read().split(' ')[-1][:-1]
 
     if os.getenv('TOKEN') is not None:
 
