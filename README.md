@@ -62,7 +62,7 @@ pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 |-i | Starts pydo in interactive mode | pydo -i | Gives you a command line that you can interact with |
 |-s \<service/application> | For which service should the environment variables be loaded? | pydo -s CustomerService
 |-S | Sets a default service for pydo and writes it to a config file | pydo -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
-|-n | do not query credentials at all  | pydo -n |
+|-n | Do not query the parameter store at all  | pydo -n | Can be used to auth the current session with MFA
 |-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | pydo -e Prod | 
 |-t \<2fa key> | Takes the 2FA key from your aws account | pydo -t 987123
 |-T | Lets you type in the 2FA key from your aws account during runtime | pydo -T | When you run your command pydo will ask for the token |
@@ -95,6 +95,38 @@ pydo "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
 
 **Note** the quoting of the variable.
 
+## Enforce MFA authentication for AWS feature / function
+
+Add the condition "MultiFactorAuthPresent" to your IAM permission:
+
+```
+    "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
+```
+
+Sample for sts:AssumeRole: 
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": {
+    "Effect": "Allow",
+    "Principal": {"AWS": "ACCOUNT-B-ID"},
+    "Action": "sts:AssumeRole",
+    "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
+  }
+}
+```
+
+Now you need MFA authentication to run assume role commands.
+Sample call for this would be:
+
+```
+pydo -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
+
+# -q removes the unnecessary output
+# -n puts pydo in only authentication mode
+# -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
+```
 
 ## Format for these environment variables:
 
@@ -374,19 +406,15 @@ pip install credopy
 
 ## Todo
 
-* Add an option to just authenticate a session with MFA(currently, this can be done by running "pydo -Y -q -i") 
+* Add proper requirements.txt with https://github.com/Yubico/yubikey-manager
+* fix windows installation(v1 works, the newest not!)
+* document how to enforce MFA / pydo for only prod env variables
 * Load service name also from aws tags
 * Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
-* Describe how to make prod parameters only accessible with MFS auth and the rest without
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
  * Load environment tags for ECS container / for task
- * Describe the "troy credential credo"
-* Add proper requirements.txt with https://github.com/Yubico/yubikey-manager
-* ykman deprecated message + message after ykman auth
 * feature to refresh env variables in the background
-* fix windows installation(v1 works, the newest not!)
-* document how to enforce MFA / pydo for (all) cli commands
 * Add testing https://pydantic-docs.helpmanual.io/
 * Add feature for only loading certain variables to speed up loading
 
