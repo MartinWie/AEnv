@@ -390,12 +390,9 @@ https://github.com/aws/aws-cli/issues/3607
 
 ## Installation
 
-* Install python3 and pip 
-* install and setup boto3:
+* Install python3 and pip
 
-```
-pip install awscli --user
-```
+* [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 
 * Install pydo:
 
