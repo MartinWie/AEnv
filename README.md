@@ -3,9 +3,26 @@
 
 ![CredoPy aka pydo](https://github.com/MartinWie/CredoPy/blob/master/credopy_logo.png)
 
+## Installation
+
+* Install python3 and pip
+
+* [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+
+* Install pydo:
+
+```
+pip install credopy
+```
+
+* For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager)
+
+* On Windows [setup Boto3 credentials](https://pypi.org/project/boto3/) 
+
+
 ## No passwords in code!
 
-Make your company more secure using the "troy password credo"! 
+Make your company more secure by using the "troy password credo"! 
 
 Easier said than done working with credentials can get very messy and lead to huge security and data protection problems. So while working at [troy gmbh](https://www.linkedin.com/company/troy-gmbh/) it became clear that we had to define some fundamental rules to maintain a high level of security during fast growth phases. This brought up the "troy password credo".
 
@@ -386,23 +403,6 @@ https://github.com/aws/aws-cli/issues/3607
 3. Create/adjust your instance roles/IAM roles with proper permissions as described in 
 
 **Permissions**
-
-
-## Installation
-
-* Install python3 and pip
-
-* [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-
-* Install pydo:
-
-```
-pip install credopy
-```
-
-* For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager)
-
-* On Windows [setup Boto3 credentials](https://pypi.org/project/boto3/) 
 
 ## Todo
 
