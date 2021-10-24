@@ -400,6 +400,7 @@ https://github.com/aws/aws-cli/issues/3607
 pip install credopy
 ```
 
+* For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager)
 
 ## Todo
 
