@@ -402,6 +402,8 @@ pip install credopy
 
 * For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager)
 
+* On Windows [setup Boto3 credentials](https://pypi.org/project/boto3/) 
+
 ## Todo
 
 * document how to enforce MFA / pydo for only prod env variables
