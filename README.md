@@ -15,7 +15,7 @@
 pip install credopy
 ```
 
-* For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager)
+* For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager#installation)
 
 * On Windows [setup Boto3 credentials](https://pypi.org/project/boto3/) 
 
