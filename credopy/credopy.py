@@ -271,6 +271,11 @@ def getBotoClients():
 
     return (clientSTS, clientEC2)
 
+def isQuietModeEnabled():
+    if os.getenv('PYDO_QUIET') is None:
+        printInfo()
+        return False
+    return True
 
 def app():
     if os.getenv('SERVICE') is None:
@@ -371,9 +376,7 @@ def app():
             WithDecryption=True
         )
 
-        if os.getenv('PYDO_QUIET') is None:
-            printInfo()
-            quietMode = False
+        quietMode = isQuietModeEnabled()
 
         for r in response['Parameters']:
             if not quietMode:
