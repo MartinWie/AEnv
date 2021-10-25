@@ -371,7 +371,6 @@ def app():
             WithDecryption=True
         )
 
-        quietMode = None
         if os.getenv('PYDO_QUIET') is None:
             printInfo()
             quietMode = False
