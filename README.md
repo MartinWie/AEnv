@@ -145,6 +145,48 @@ pydo -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/exa
 # -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
 ```
 
+### Enforce MFA authentication for all Prod parameters
+
+To enforce MFA authentication for all Prod parameters.
+
+(Do not forget to adapt to account ID(123456789098) to your own ;) )  
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:PutParameter",
+                "ssm:DeleteParameter",
+                "ssm:GetParameterHistory",
+                "ssm:GetParametersByPath",
+                "ssm:GetParameters",
+                "ssm:ListTagsForResource",
+                "ssm:GetParameter",
+                "ssm:DeleteParameters"
+            ],
+            "Resource": [
+                "arn:aws:ssm:*:123456789098:parameter/Prod/*"
+            ],
+            "Condition": {
+                "Bool": {
+                    "aws:MultiFactorAuthPresent": "true"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "ssm:DescribeParameters",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
 ## Format for these environment variables:
 
 Every environment variable that is loaded with pydo starts with "SECRET_".
@@ -406,15 +448,15 @@ https://github.com/aws/aws-cli/issues/3607
 
 ## Todo
 
-* document how to enforce MFA / pydo for only prod env variables
 * Load service name also from aws tags
 * Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
- * Load environment tags for ECS container / for task
+* Load environment tags for ECS container / for task
 * feature to refresh env variables in the background
 * Add testing https://pydantic-docs.helpmanual.io/
 * Add feature for only loading certain variables to speed up loading
+* cleanup/refactor documentation / improve structure
 
 ## Acknowledgments 
 
