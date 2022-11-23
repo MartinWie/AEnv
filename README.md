@@ -448,15 +448,22 @@ https://github.com/aws/aws-cli/issues/3607
 
 ## Todo
 
-* Load service name also from aws tags
+* introduce new pip package "aenv" (last update to https://pypi.org/project/credopy/) + and rework repo
+* Update and correct -h / --help output
+* remove -q and add -v mode 
+* Update initial setup instructions + consol output for this(ykman + output for missing service)
+* Option to list all available environments / services(discover/list env / list services)
+* Check for ykman on -Y calls improve output
+* get rid of environment detection and only rely on -e flag (also no default + better output for missing environment)
+* Currently only the fist MFA device of any given account is used -> add mfa device selection + option for default selection
+* cleanup/refactor documentation / improve overal structure
+* add only only auth mode
 * Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
 * Load environment tags for ECS container / for task
-* feature to refresh env variables in the background
 * Add testing https://pydantic-docs.helpmanual.io/
 * Add feature for only loading certain variables to speed up loading
-* cleanup/refactor documentation / improve structure
 
 ## Acknowledgments 
 
