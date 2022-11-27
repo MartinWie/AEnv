@@ -3,6 +3,11 @@
 
 ![CredoPy aka pydo](https://github.com/MartinWie/CredoPy/blob/master/credopy_logo.png)
 
+# Discontinued
+
+CredoPy is discontinued. Nearly all features will be available in [AEnv](https://github.com/MartinWie/aenv).
+All existing pip packages will stay available, feel free to keep using pydo.
+
 ## Installation
 
 * Install python3 and pip
@@ -462,7 +467,7 @@ https://github.com/aws/aws-cli/issues/3607
 * Enhance local profile/config setup/usage
 * Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
 * Load environment tags for ECS container / for task
-* Add testing https://pydantic-docs.helpmanual.io/
+* Add testing
 * Add feature for only loading certain variables to speed up loading
 
 ## Acknowledgments 
