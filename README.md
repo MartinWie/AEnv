@@ -1,12 +1,7 @@
-# CredoPy aka pydo!
-[![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/CredoPy)](https://github.com/MartinWie/CredoPy/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
+# AEnv former CredoPy!
+[![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/AEnv)](https://github.com/MartinWie/AEnv/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
-![CredoPy aka pydo](https://github.com/MartinWie/CredoPy/blob/master/credopy_logo.png)
-
-# Discontinued
-
-CredoPy is discontinued. Nearly all features will be available in [AEnv](https://github.com/MartinWie/aenv).
-All existing pip packages will stay available, feel free to keep using pydo.
+![AEnv](https://github.com/MartinWie/AEnv/blob/master/AEnv_logo_no_bg.png)
 
 ## Installation
 
@@ -14,9 +9,12 @@ All existing pip packages will stay available, feel free to keep using pydo.
 
 * [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 
-* Install pydo:
+* Install aenv:
 
 ```
+pip install aenv
+
+# For old pydo package:
 pip install credopy
 ```
 
@@ -42,7 +40,7 @@ Working with Credentials can be fun, but from a security perspective, most of th
 
 If you're using the AWS cloud you found the right repository!
 
-Pydo is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
+AEnv is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
 
 And because the parameter store supports paths you can define different services with different environments.
 
@@ -62,40 +60,40 @@ Output these example data (The database password for CustomerManagement in produ
 
 
 ```
-pydo -e Prod -s CustomerManagement echo '$SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD'
+aenv -e Prod -s CustomerManagement echo '$SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD'
 ```
 
-With both parameters, your "CustomerManagement" application/service (launched with pydo) could now access the database with the provided username and password.
+With both parameters, your "CustomerManagement" application/service (launched with aenv) could now access the database with the provided username and password.
 
-Details at: [How to access the environment variables](https://github.com/MartinWie/CredoPy#how-to-access-the-environment-variables)
+Details at: [How to access the environment variables](https://github.com/MartinWie/AEnv#how-to-access-the-environment-variables)
 
 
 ## Usage 
 
 ```
-pydo [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
+aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 ```
 
 **Options:**
 
 | Option | explination | sample | comment 
 | :- | :- | :- | :-
-|-h | Shows help | pydo -h |
-|-i | Starts pydo in interactive mode | pydo -i | Gives you a command line that you can interact with |
-|-s \<service/application> | For which service should the environment variables be loaded? | pydo -s CustomerService
-|-S | Sets a default service for pydo and writes it to a config file | pydo -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
-|-n | Do not query the parameter store at all  | pydo -n | Can be used to auth the current session with MFA
-|-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | pydo -e Prod | 
-|-t \<2fa key> | Takes the 2FA key from your aws account | pydo -t 987123
-|-T | Lets you type in the 2FA key from your aws account during runtime | pydo -T | When you run your command pydo will ask for the token |
-|-Y | Uses Yubikey for MFA auth | pydo -Y | During runtime pydo will use ykman to fetch the MFA-Key from your yubikey
-|-r \<region> | Overwrites temporary the awscli default region | pydo -r eu-central-1 | Pydo will use the given region for example Frankfurt
-|-q | Quiet mode (less output) | pydo -q |
-|-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -u user@example.de |
-|-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | pydo -a 999999999999 | 
-|-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile | pydo -p testUser1
-|-c \<aws profile> | Container mode(enable this to make pydo work in ecs and codebuild) | pydo -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
-|\<command> | Is the command to execute with environment variables injected. | pydo code | Will run VS Code with access to given environment variables
+|-h | Shows help | aenv -h |
+|-i | Starts aenv in interactive mode | aenv -i | Gives you a command line that you can interact with |
+|-s \<service/application> | For which service should the environment variables be loaded? | aenv -s CustomerService
+|-S | Sets a default service for aenv and writes it to a config file | aenv -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
+|-n | Do not query the parameter store at all  | aenv -n | Can be used to auth the current session with MFA
+|-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | aenv -e Prod | 
+|-t \<2fa key> | Takes the 2FA key from your aws account | aenv -t 987123
+|-T | Lets you type in the 2FA key from your aws account during runtime | aenv -T | When you run your command aenv will ask for the token |
+|-Y | Uses Yubikey for MFA auth | aenv -Y | During runtime aenv will use ykman to fetch the MFA-Key from your yubikey
+|-r \<region> | Overwrites temporary the awscli default region | aenv -r eu-central-1 | aenv will use the given region for example Frankfurt
+|-q | Quiet mode (less output) | aenv -q |
+|-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -u user@example.de |
+|-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -a 999999999999 | 
+|-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile | aenv -p testUser1
+|-c \<aws profile> | Container mode(enable this to make aenv work in ecs and codebuild) | aenv -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
+|\<command> | Is the command to execute with environment variables injected. | aenv code | Will run VS Code with access to given environment variables
 
 Note: **It may be required to double escaping.**
 
@@ -103,17 +101,17 @@ Examples:
 
 **Linux:**
 
-pydo echo '$SECRET_CUSTOMERSERVICE_UI_URL'
+aenv echo '$SECRET_CUSTOMERSERVICE_UI_URL'
 
 or
 
 **Windows:**
 
-pydo echo %SECRET_CUSTOMERSERVICE_UI_URL%  
+aenv echo %SECRET_CUSTOMERSERVICE_UI_URL%  
 
 **Mac:**
 
-pydo "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
+aenv "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
 
 **Note** the quoting of the variable.
 
@@ -143,10 +141,10 @@ Now you need MFA authentication to run assume role commands.
 Sample call for this would be:
 
 ```
-pydo -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
+aenv -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
 
 # -q removes the unnecessary output
-# -n puts pydo in only authentication mode
+# -n puts aenv in only authentication mode
 # -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
 ```
 
@@ -194,7 +192,7 @@ To enforce MFA authentication for all Prod parameters.
 
 ## Format for these environment variables:
 
-Every environment variable that is loaded with pydo starts with "SECRET_".
+Every environment variable that is loaded with aenv starts with "SECRET_".
 
 Then the service-name and path, separated by underliners.
 
@@ -234,7 +232,7 @@ SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD
 
 ## Environments
 
-We now talked a lot about environments, but how can pydo differ between different environments like dev, test, or prod?
+We now talked a lot about environments, but how can aenv differ between different environments like dev, test, or prod?
 
 Quite simply, you tell it!
 
@@ -315,26 +313,26 @@ for name in dic:
 With
 
 ```
-pydo -e <env>
+aenv -e <env>
 ```
 
-you can launch pydo for every in the parameterstore defined environment.
+you can launch aenv for every in the parameterstore defined environment.
 
-If you don't set any pydo swtiches to "Dev"
+If you don't set any aenv swtiches to "Dev"
 
 **AWS Server**
 
-when pydo runs on an aws machine you could run it with "-e \<env>" but this is rather inconvenient. So pydo queries the instance tags and searches for the key "environment" and uses its value as the current environment. If the environment tag is not set and you did not provide an environment with "-e" pydo automatically defaults to "Dev"
+when aenv runs on an aws machine you could run it with "-e \<env>" but this is rather inconvenient. So aenv queries the instance tags and searches for the key "environment" and uses its value as the current environment. If the environment tag is not set and you did not provide an environment with "-e" aenv automatically defaults to "Dev"
 
 
 ## How to access the environment variables
 
-To access those environment variables you have to run your application/service with pydo.
+To access those environment variables you have to run your application/service with aenv.
 
 ```
-pydo java -jar service.jar
+aenv java -jar service.jar
 //or
-pydo python service2.py
+aenv python service2.py
 ```
 
 Now these two services have all environment variables for their service and environment available and can work with them here are two easy examples:
@@ -375,12 +373,12 @@ boto3 uses the aws CLI's authentication so make sure you set this up before ;)
 
 [AWS CLI](https://aws.amazon.com/cli/)
 
-By default, pydo uses the aws CLI default profile, but of course, you can choose the profile, that you want to use, simply do:
+By default, aenv uses the aws CLI default profile, but of course, you can choose the profile, that you want to use, simply do:
 
 ```
-pydo -p <awscli profile name>
+aenv -p <awscli profile name>
 #or 
-pydo -h 
+aenv -h 
 #to see more configuration options
 ```
 
@@ -402,21 +400,21 @@ At least in my humble opinion, this should be a "better be safe than sorry" poin
 
 Especially for your production systems!
 
-Pydo supports multiple MFA options, details in the "Usage" section, here the short overview:
+AEnv supports multiple MFA options, details in the "Usage" section, here the short overview:
 
 ```
 # normal virtual mfa token:
-pydo -t <TOKEN>
+aenv -t <TOKEN>
 
 #askt for the token during runtime:
-pydo -T
+aenv -T
 
 # leads to:
-$ pydo -T
+$ aenv -T
 $ Please enter token: 
 
 #Yubikey Authenticator:
-pydo -Y
+aenv -Y
 
 ```
 
@@ -433,7 +431,7 @@ https://github.com/aws/aws-cli/issues/3607
 | "sts:GetCallerIdentity" | clientSTS.get_caller_identity() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html | Optional(No permissions are required to perform this operation.)
 | "sts:GetSessionToken" | clientSTS.get_session_token() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html |
 | "ssm:GetParametersByPath" | clientSSMMFA.get_parameters_by_path() | https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-access.html |
-| "iam:ListMFADevices" | boto3.client('iam').list_mfa_devices() | https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_iam_mfa-selfmanage.html | Optional! (At the moment not in use but as soon aws API supports hardware tokens this can be enabled to let pydo support hardware MFA's) 
+| "iam:ListMFADevices" | boto3.client('iam').list_mfa_devices() | https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_iam_mfa-selfmanage.html | Optional! (At the moment not in use but as soon aws API supports hardware tokens this can be enabled to let aenv support hardware MFA's) 
 
 **tldr Minimal permissions:**
 
@@ -455,6 +453,8 @@ https://github.com/aws/aws-cli/issues/3607
 
 * introduce new pip package "aenv" (last update to https://pypi.org/project/credopy/) + and rework repo
 * Update and correct -h / --help output
+* Add regex filter for only loading specific variables
+* Add regex filter to leave out variables from loading
 * remove -q and add -v mode 
 * Update initial setup instructions + consol output for this(ykman + output for missing service)
 * Option to list all available environments / services(discover/list env / list services)
@@ -465,7 +465,7 @@ https://github.com/aws/aws-cli/issues/3607
 * add only only auth mode
 * Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
-* Load multiple services at once instead of concatenating multiple pydo calls ( "pydo -s Service1 pydo -s Service2 ")
+* Load multiple services at once instead of concatenating multiple aenv calls ( "aenv -s Service1 aenv -s Service2 ")
 * Load environment tags for ECS container / for task
 * Add testing
 * Add feature for only loading certain variables to speed up loading
@@ -484,7 +484,7 @@ https://github.com/aws/aws-cli/issues/3607
 
 ## License
 
-MIT [Link](https://github.com/MartinWie/CredoPy/blob/master/LICENSE)
+MIT [Link](https://github.com/MartinWie/AEnv/blob/master/LICENSE)
 
 ## Support me :heart: :star: :money_with_wings:
 If this project provided value, and you want to give something back, you can give the repo a star or support by buying me a coffee.

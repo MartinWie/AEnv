@@ -6,15 +6,15 @@ def readme():
         return f.read()
 
 
-setup(name='credopy',
-      version='1.1.4',
-      description='A Python 3 tool to fetch secure strings from aws parameter store and injecting those into environment variables.',
+setup(name='aenv',
+      version='2.0.0',
+      description='A Python 3 tool to fetch secure strings from the aws parameter store and injecting those into environment variables.',
       long_description=readme(),
       long_description_content_type='text/markdown',
-      download_url='https://github.com/MartinWie/CredoPy/archive/1.1.4.tar.gz',
+      download_url='https://github.com/MartinWie/AEnv/archive/2.0.0.tar.gz',
       entry_points={
           'console_scripts': [
-              'pydo=credopy.credopy:main'
+              'aenv=aenv.aenv:main'
           ]
       },
       classifiers=[
@@ -26,12 +26,12 @@ setup(name='credopy',
           'Topic :: Security',
           'Operating System :: OS Independent'
       ],
-      url='https://github.com/MartinWie/CredoPy',
+      url='https://github.com/MartinWie/AEnv',
       author='MartinWiechmann',
       author_email='martin.wiechmann.office@gmail.com',
-      keywords='aws credo security parameterstore ssm cloud password pydo credopy',
+      keywords='aws credo security parameterstore ssm cloud password aenv',
       license='MIT',
-      packages=['credopy'],
+      packages=['aenv'],
       install_requires=[
           'boto3'
       ],

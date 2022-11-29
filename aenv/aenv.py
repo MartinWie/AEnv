@@ -8,12 +8,12 @@ from configparser import ConfigParser
 
 def help():
     print("""Usage:
-  pydo [-s <service/application>] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
+  aenv [-s <service/application>] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 
   Options:
   -h shows help
   -s <service/application>
-  -S sets a default service for pydo and writes it to a config file
+  -S sets a default service for aenv and writes it to a config file
   -n do not query parameter store. Can be used to only authenticate the cli session with -Y -t or -T 
   -e <env> take credentials from environment Dev, Test or Prod (permission required)
   -t <2fa key> takes the 2FA key from your aws account
@@ -23,16 +23,16 @@ def help():
   -q Quiet mode (less output)
   -u sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws)
   -a sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws)
-  -p if multiple aws profiles are available you can choose the profile otherwise pydo will use the default profile
-  -c container mode(enable this to make pydo work in ecs and codebuild)
+  -p if multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile
+  -c container mode(enable this to make aenv work in ecs and codebuild)
   <command> is the command to execute with environment variables injected.
   Note that parameter substitution is performed. It may be required to double escape.
 
   Examples:
-  pydo echo '$SECRET_CUSTOMERSERVICE_UI_URL'
+  anev echo '$SECRET_CUSTOMERSERVICE_UI_URL'
   or
   Windows
-  pydo echo %SECRET_CUSTOMERSERVICE_UI_URL%  
+  aenv echo %SECRET_CUSTOMERSERVICE_UI_URL%  
   
   displays the parameters for the JVM in the Dev environment. Note the quoting of the variable.
 """)
@@ -65,12 +65,12 @@ def check(argv):
             # Caution! This is set to the string "true" not an actual boolean because we use Environment variables
             # instead of normal vars. (This is done to ensure compatibility to the original credo / systems that
             # worked with credo)
-            os.environ['PYDO_NO_PARAMETER'] = 'true'
+            os.environ['AENV_NO_PARAMETER'] = 'true'
             os.environ['CREDO_NO_AWS'] = 'true' # Credo compatibility flag
             os.environ['ENVIRONMENT'] = 'Local'
             continue
         elif opt == '-q':
-            os.environ['PYDO_QUIET'] = 'true'
+            os.environ['AENV_QUIET'] = 'true'
             continue
         elif opt == '-i':
             os.environ['INTERACTIVE'] = 'true'
@@ -94,7 +94,7 @@ def check(argv):
             os.environ['CONTAINERMODE'] = 'true'
             continue
         elif opt == '-S':
-            pydoConfigWrite('DEFAULTSERVICE', arg)
+            aenvConfigWrite('DEFAULTSERVICE', arg)
             continue
         elif opt == '-h':
             help()
@@ -106,45 +106,45 @@ def check(argv):
 
 
 def getCofigPath():
-    pydoDir = str(Path.home()) + "/.credopy/"
-    pydoConfigPath = pydoDir + "config"
+    aenvDir = str(Path.home()) + "/.aenv/"
+    aenvConfigPath = aenvDir + "config"
     configExists = False
 
-    if path.exists(pydoConfigPath):
+    if path.exists(aenvConfigPath):
         configExists = True
 
-    return (pydoConfigPath, pydoDir, configExists)
+    return (aenvConfigPath, aenvDir, configExists)
 
 
-def pydoLoadConfig(config):
+def aenvLoadConfig(config):
     for eachSelection in config.sections():
         for (eachKey, eachVal) in config.items(eachSelection):
             os.environ[eachKey.upper()] = str(eachVal)
 
 
-def pydoConfigRead(pydoConfigPath):
+def aenvConfigRead(aenvConfigPath):
     parser = ConfigParser()
-    parser.read(pydoConfigPath)
+    parser.read(aenvConfigPath)
 
     return parser
 
 
-def pydoConfigWrite(key, value):
-    pydoConfigPath, pydoDir, configExists = getCofigPath()
+def aenvConfigWrite(key, value):
+    aenvConfigPath, aenvDir, configExists = getCofigPath()
     config = ConfigParser()
 
-    if not path.exists(pydoDir):
-        os.mkdir(pydoDir)
+    if not path.exists(aenvDir):
+        os.mkdir(aenvDir)
 
-    if path.exists(pydoConfigPath):
-        config = pydoConfigRead(pydoConfigPath)
+    if path.exists(aenvConfigPath):
+        config = aenvConfigRead(aenvConfigPath)
         config['DefaultParameters'][key] = value
     else:
         config['DefaultParameters'] = {
             key: value
         }
 
-    with open(pydoConfigPath, 'w') as f:
+    with open(aenvConfigPath, 'w') as f:
         config.write(f)
 
 
@@ -272,7 +272,7 @@ def getBotoClients():
     return (clientSTS, clientEC2)
 
 def isQuietModeEnabled():
-    if os.getenv('PYDO_QUIET') is None:
+    if os.getenv('AENV_QUIET') is None:
         printInfo()
         return False
     return True
@@ -319,11 +319,11 @@ def app():
                 TokenCode=os.getenv('TOKEN')
             )
         except:
-            print('Wrong MFA token or MFA device(pydo currently only supports virtual MFA devices)')
+            print('Wrong MFA token or MFA device(aenv currently only supports virtual MFA devices)')
             print("Feel free to drop a comment about this: https://github.com/aws/aws-cli/issues/3607")
             sys.exit()
 
-    if os.getenv('PYDO_NO_PARAMETER') == 'true':
+    if os.getenv('AENV_NO_PARAMETER') == 'true':
         pass
     else:
         if os.getenv('AWS_REGION') is None and (
@@ -404,7 +404,7 @@ def app():
                                                                                                                  "_").upper()] = \
                     r['Value']
 
-    if os.getenv('PYDO_QUIET') is None and os.getenv('CREDO_NO_AWS') == 'true':
+    if os.getenv('AENV_QUIET') is None and os.getenv('CREDO_NO_AWS') == 'true':
         printInfo()
 
     isWindows = False
@@ -429,13 +429,13 @@ def app():
 def main():
     check(sys.argv[1:])
 
-    pydoConfigPath, pydoDir, configExists = getCofigPath()
+    aenvConfigPath, aenvDir, configExists = getCofigPath()
 
     if configExists:
-        pydoLoadConfig(pydoConfigRead(pydoConfigPath))
+        aenvLoadConfig(aenvConfigRead(aenvConfigPath))
 
     if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
-        print("Please configure a default service with pydo -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
+        print("Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
         sys.exit()
 
     app()
