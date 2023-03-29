@@ -66,7 +66,7 @@ def check(argv):
             # instead of normal vars. (This is done to ensure compatibility to the original credo / systems that
             # worked with credo)
             os.environ['AENV_NO_PARAMETER'] = 'true'
-            os.environ['CREDO_NO_AWS'] = 'true' # Credo compatibility flag
+            os.environ['CREDO_NO_AWS'] = 'true'  # Credo compatibility flag
             os.environ['ENVIRONMENT'] = 'Local'
             continue
         elif opt == '-q':
@@ -146,23 +146,6 @@ def aenvConfigWrite(key, value):
 
     with open(aenvConfigPath, 'w') as f:
         config.write(f)
-
-
-def getAWSEnv(instanceID, clientEC2):
-    if instanceID == None:
-        os.environ['ENVIRONMENT'] = 'Dev'
-        return
-    response = clientEC2.describe_tags(
-        Filters=[
-            {
-                'Name': 'resource-id',
-                'Values': [instanceID]
-            }
-        ]
-    )
-    for pair in response['Tags']:
-        if pair['Key'] == 'environment':
-            os.environ['ENVIRONMENT'] = pair['Value']
 
 
 def getSessionData():
@@ -271,11 +254,13 @@ def getBotoClients():
 
     return (clientSTS, clientEC2)
 
+
 def isQuietModeEnabled():
     if os.getenv('AENV_QUIET') is None:
         printInfo()
         return False
     return True
+
 
 def app():
     if os.getenv('SERVICE') is None:
@@ -335,8 +320,6 @@ def app():
         else:
             sessionRegion, sessionProfileName = getSessionData()
             os.environ['AWS_REGION'] = sessionRegion
-
-        getAWSEnv(os.getenv('INSTANCEID'), clientEC2)
 
         if os.getenv('OVERRIDE_ENV') is not None:
             os.environ['ENVIRONMENT'] = os.getenv('OVERRIDE_ENV')
@@ -436,6 +419,10 @@ def main():
 
     if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
         print("Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
+        sys.exit()
+
+    if os.getenv('OVERRIDE_ENV') is None and os.getenv('ENVIRONMENT') is None:
+        print("Please define an environment with aenv -e <ENVIRONMENT>.")
         sys.exit()
 
     app()

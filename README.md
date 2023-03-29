@@ -1,82 +1,260 @@
 # AEnv former CredoPy!
+
 [![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/AEnv)](https://github.com/MartinWie/AEnv/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
-![AEnv](https://github.com/MartinWie/AEnv/blob/master/AEnv_logo_no_bg.png)
+![AEnv](https://github.com/MartinWie/AEnv/blob/master/AEnv_logo.png)
+
+## A tool to dynamically inject AWS Parameter Store entries as environment variables, based on environment and service name.
 
 ## Installation
+
+### Prerequisites
 
 * Install python3 and pip
 
 * [Install AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+* Boto3 (Will be installed with the aenv package)
+  * Windows: [setup Boto3 credentials](https://pypi.org/project/boto3/)
 
-* Install aenv:
+
+### Main Package (aenv)
 
 ```
 pip install aenv
-
-# For old pydo package:
-pip install credopy
 ```
 
-* For YubiKey support install the [YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager#installation)
+### Optional - Yubikey support
 
-* On Windows [setup Boto3 credentials](https://pypi.org/project/boto3/) 
+To support YubiKey authentication with OATH (YubiKey as a virtual device MFA)
+
+[YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager#installation)
+
+
+### Discontinued pydo package
+
+Can still be installed, but will not receive any future updates.
+
+```
+pip install credopy
+```
 
 
 ## No passwords in code!
 
-Make your company more secure by using the "troy password credo"! 
+Improve your projects' security without over engineering access to credentials.
 
-Easier said than done working with credentials can get very messy and lead to huge security and data protection problems. So while working at [troy gmbh](https://www.linkedin.com/company/troy-gmbh/) it became clear that we had to define some fundamental rules to maintain a high level of security during fast growth phases. This brought up the "troy password credo".
+AEnv can be used to dynamically inject AWS Parameter Store entries, based on environment and service as environment variables.
 
-### troy password credo:
-You may ask "What is the famous troy password credo?"
-It's very simple: **Never** store credentials unencrypted!
+By injecting all relevant credentials as environment variables, we have them easily available without directly storing them in our codebase.
 
+With the added bonus of a straight forward environment separation in your code. Just run "aenv -e Dev" and your service gets all development environment variables.
 
-## Let's get started
+## Getting started / Setup & Usage
 
-Working with Credentials can be fun, but from a security perspective, most of the time it isn't! Especially if you have multiple systems and different environments.
-
-If you're using the AWS cloud you found the right repository!
-
-AEnv is a tool that injects aws parameter store strings and secure strings into your memory as an environment variable. With this, your important credentials/security keys/... never have to touch your disk again.
-
-And because the parameter store supports paths you can define different services with different environments.
-
-For example:
+At first, make sure you have installed the AWS CLI + the respective setup to use the CLI.
+Depending on your permissions, you can run the following command to check if your CLI is working:
 
 ```
-/<Environment>/<KotlinApp1>/
+aws sts get-caller-identity
+```
 
-#which could look like:
+After that, make sure you have installed the aenv python package.
+
+Now we can start with setting up a simple example service. Let's call it **UserService**. 
+
+The **UserService** needs a **database hostname**, a **database username** and a **database password**. 
+
+Let's assume, we have two environments, "Dev" and "Test" and we want to inject the correct **UserService**,  **database hostname**,... for the related environment.
+
+Step 1 is to create the AWS parameter store entries.
+Let's create two entries:
+
+```
+/Dev/UserService/DB/hostname
+# and 
+/Test/UserService/DB/hostname
+```
+
+Both are SecureString, that hold the values:
+```
+db.dev.example.com for /Dev/UserService/DB/hostname
+and
+db.test.example.com for /Test/UserService/DB/hostname
+```
+
+Step 2 is to fetch those values and have them available as environment variables.
+
+For the **UserService** variables on Dev run:
+
+```
+aenv -e Dev -s UserService 
+```
+This command fetches all entries from the parameter store with the path /Dev/UserService/* and makes them available as environment variables.
+
+If you just want to echo out the DB hostname we created (/Dev/UserService/DB/hostname) you can run:
+
+```
+aenv -e Dev -s UserService echo '$SECRET_USERSERVICE_DB_HOSTNAME'
+```
+
+You can also run your service with aenv to have the correct DB hostname available in the service as an environment variable.
+The call for a Python or JVM service would be:
+
+```
+aenv -e Dev -s UserService java -jar service.jar
+# or
+aenv -e Dev -s UserService python service2.py
+```
+
+Both services now have access to the environment variable "SECRET_USERSERVICE_DB_HOSTNAME" containing the value that we defined for "/Dev/UserService/DB/hostname".
+
+
+## Details 
+
+### General concept
+
+AEnv uses the parameter store path to define the environment and service name, following this schema:
+
+```
+/<Environment>/<Service-Name>/
+
+# Which could look like:
 /Prod/CustomerManagement/DB/USER
-
-#or
+# Or
 /Prod/CustomerManagement/DB/PASSWORD
 ```
 
-Output these example data (The database password for CustomerManagement in production ):
+Having those two in place would enable our **CustomerManagement** service running in our Prod environment to access, the environment variables:
+SECRET_CUSTOMERMANAGEMENT_DB_USER
+and 
+SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD
 
+With both parameters in place, your **CustomerManagement** application/service, launched with aenv, could now access the database with the provided username and password.
 
 ```
-aenv -e Prod -s CustomerManagement echo '$SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD'
+aenv -e Prod -s CustomerManagement java -jar service.jar
 ```
 
-With both parameters, your "CustomerManagement" application/service (launched with aenv) could now access the database with the provided username and password.
+#### Format for these environment variables:
 
-Details at: [How to access the environment variables](https://github.com/MartinWie/AEnv#how-to-access-the-environment-variables)
+Every environment variable that is loaded with aenv starts with "SECRET_".
 
+Then the service-name and path, separated by underliners. (of course in upper case)
 
-## Usage 
+For example: 
 
+```
+/Prod/CustomerManagement/DB/USER
+```
+
+would be accessible with:
+
+```
+SECRET_CUSTOMERMANAGEMENT_DB_USER
+```
+
+or
+
+```
+/Prod/CustomerManagement/DB/PASSWORD/USER1
+```
+
+would be accessible with:
+
+```
+SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD_USER1
+```
+
+More about environment variables: [Guide to Unix/Environment Variables](https://en.wikibooks.org/wiki/Guide_to_Unix/Environment_Variables)
+
+#### Testing single variables
+**Linux/Mac**
+
+```
+aenv -e Dev -s UserService echo '$SECRET_USERSERVICE_UI_URL'
+```
+
+or
+
+**Windows**
+
+```
+aenv -e Dev -s UserService echo %SECRET_USERSERVICE_UI_URL%  
+```
+
+### Bonus:
+#### Running a local application with access to environment variables of a given service
+
+Linux/Mac running IntelliJ with Test environment variables for the **UserService**
+
+```
+aenv -e Test -s UserService "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
+```
+
+This can come in handy if you want to debug something that only seems to occure in the Test environment. 
+
+### Permissions (setup example)
+
+Here is the minimal suggested set of IAM permissions to use aenv for all services that can be found for our Dev environment:
+
+(Do not forget to adapt to account ID(123456789098) to your own )  
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParametersByPath",
+                "ssm:GetParameters",
+                "ssm:ListTagsForResource",
+                "ssm:GetParameter"
+            ],
+            "Resource": [
+                "arn:aws:ssm:*:123456789098:parameter/Dev/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "ssm:DescribeParameters",
+            "Resource": "*"
+        }
+    ]
+}
+```
+These permissions allow to fetch all entries for any service in the Dev environment.
+
+For example, fetching all environment variables for a service called UserService:
+
+```
+aenv -e Dev -s UserService
+```
+
+To further limit access to only allow loading environment variables for a specific service like "UserService" we need to adapt the "Resource":
+
+```
+"Resource": [
+                "arn:aws:ssm:*:123456789098:parameter/Dev/UserService/*"
+            ]
+```
+
+### Detail usage
+
+For the help page run:
+
+```
+aenv --help
+# or
+aenv -h
+```
+
+All current options:
 ```
 aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 ```
 
-**Options:**
-
-| Option | explination | sample | comment 
+| Option | explanation | sample | comment 
 | :- | :- | :- | :-
 |-h | Shows help | aenv -h |
 |-i | Starts aenv in interactive mode | aenv -i | Gives you a command line that you can interact with |
@@ -95,64 +273,82 @@ aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 |-c \<aws profile> | Container mode(enable this to make aenv work in ecs and codebuild) | aenv -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
 |\<command> | Is the command to execute with environment variables injected. | aenv code | Will run VS Code with access to given environment variables
 
-Note: **It may be required to double escaping.**
+### How to access the environment variables in Kotlin and Python
 
-Examples:
+#### How to access the environment variables
 
-**Linux:**
-
-aenv echo '$SECRET_CUSTOMERSERVICE_UI_URL'
-
-or
-
-**Windows:**
-
-aenv echo %SECRET_CUSTOMERSERVICE_UI_URL%  
-
-**Mac:**
-
-aenv "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
-
-**Note** the quoting of the variable.
-
-## Enforce MFA authentication for AWS feature / function
-
-Add the condition "MultiFactorAuthPresent" to your IAM permission:
+To access those environment variables you have to run your application/service with aenv.
 
 ```
-    "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
+aenv -e Dev -s UserService java -jar service.jar
+//or
+aenv -e Dev -s UserService python service2.py
 ```
 
-Sample for sts:AssumeRole: 
+Now these two services have access to all Dev environment variables for the UserService.
+Here are easy examples for Python and Kotlin:
+
+**Python:**
 
 ```
-{
-  "Version": "2012-10-17",
-  "Statement": {
-    "Effect": "Allow",
-    "Principal": {"AWS": "ACCOUNT-B-ID"},
-    "Action": "sts:AssumeRole",
-    "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
-  }
-}
-```
+import os
+os.getenv('SECRET_USERSERVICE_HOSTNAME')
 
-Now you need MFA authentication to run assume role commands.
-Sample call for this would be:
+# For example conneting to a host depending on the environment:
+....
+
+hostname = os.getenv('SECRET_USERSERVICE_HOSTNAME')
+....
 
 ```
-aenv -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
 
-# -q removes the unnecessary output
-# -n puts aenv in only authentication mode
-# -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
+**Kotlin:**
+
+```
+val envVar : String? = System.getenv("SECRET_USERSERVICE_HOSTNAME")
 ```
 
-### Enforce MFA authentication for all Prod parameters
+### 5) MFA and Yubikey setup
 
-To enforce MFA authentication for all Prod parameters.
+#### Local setup
 
-(Do not forget to adapt to account ID(123456789098) to your own ;) )  
+To use the Yubikey form our command line aenv uses ykman from yubico.
+Quick OS-indipendant install via PIP:
+
+```
+pip install --user yubikey-manager
+```
+[Official documentation](https://docs.yubico.com/software/yubikey/tools/ykman/Install_ykman.html)
+
+#### AWS setup
+
+This is a work in progress!
+
+Currently, the yubikey needs to be added as a **virtual mfa** and needs to be the **first** device in our Multi-factor authentication devices.
+Feel free to also add your Yubikey as a hardware mfa **afterwards**.(The AWS web console works flawless with multiple mfa's)
+
+
+## Permissions (IAM policies / Instance roles)
+
+| Permission | Used in the code | Documentation | Comment 
+| :- | :- | :- | :-
+| "ec2:DescribeTags" | clientEC2.describe_tags() | https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeTags.html |
+| "sts:GetCallerIdentity" | clientSTS.get_caller_identity() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html | Optional(No permissions are required to perform this operation.)
+| "sts:GetSessionToken" | clientSTS.get_session_token() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html |
+| "ssm:GetParametersByPath" | clientSSMMFA.get_parameters_by_path() | https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-access.html |
+| "iam:ListMFADevices" | boto3.client('iam').list_mfa_devices() | https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_iam_mfa-selfmanage.html | Optional! (At the moment not in use but as soon aws API supports hardware tokens this can be enabled to let aenv support hardware MFA's) 
+
+**tldr Minimal permissions:**
+
+“ec2:DescribeTags”
+
+“sts:GetSessionToken”
+
+“ssm:GetParametersByPath”
+
+### Advanced permission 1 (Enforce MFA authentication for accessing Prod parameters)
+
+To enforce MFA authentication for all Prod parameters you can make use of the condition "MultiFactorAuthPresent" in your IAM permission.
 
 ```
 {
@@ -190,180 +386,47 @@ To enforce MFA authentication for all Prod parameters.
 }
 ```
 
-## Format for these environment variables:
+### Advanced permission 2 (Enforce MFA authentication for AWS feature / function)
 
-Every environment variable that is loaded with aenv starts with "SECRET_".
-
-Then the service-name and path, separated by underliners.
-
-(of course in upper case)
-
-For example: 
+Add the condition "MultiFactorAuthPresent" to your IAM permission:
 
 ```
-SECRET_CUSTOMERMANAGEMENT_DB_USER
+    "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
 ```
 
-More about environment variables: [Guide to Unix/Environment Variables](https://en.wikibooks.org/wiki/Guide_to_Unix/Environment_Variables)
-
-This is maybe made more clear by the following example:
+Sample for sts:AssumeRole: 
 
 ```
-/Prod/CustomerManagement/DB/USER
+{
+  "Version": "2012-10-17",
+  "Statement": {
+    "Effect": "Allow",
+    "Principal": {"AWS": "ACCOUNT-B-ID"},
+    "Action": "sts:AssumeRole",
+    "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
+  }
+}
 ```
 
-would be accessible with:
+Now you need MFA authentication to run assume role commands.
+Sample call for this would be:
 
 ```
-SECRET_CUSTOMERMANAGEMENT_DB_USER
+aenv -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
+
+# -q removes the unnecessary output
+# -n puts aenv in only authentication mode
+# -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
 ```
 
-or
-
-```
-/Prod/CustomerManagement/DB/PASSWORD
-```
-
-would be accessible with:
-
-```
-SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD
-```
-
-## Environments
-
-We now talked a lot about environments, but how can aenv differ between different environments like dev, test, or prod?
-
-Quite simply, you tell it!
-
-**Parameterstore:**
-
-As already mentioned you Define the environment as the first section.
-
-Let's take the previous example:
-
-```
-/Prod/CustomerManagement/DB/PASSWORD
-```
-
-here "Prod" is our environment for the database(DB) password (PASSWORD) of our CustomerManagement service/application, but we could easily also set this for our test environment like this:
-
-```
-/Test/CustomerManagement/DB/PASSWORD
-```
-
-(When creating new parameters don't forget to create them as "SecureString's" ;) )
-
-Bonus content: 
-
-Converting parameter store strings to secure strings
-Found this in my old files, before using this **test and make sure it really works** but with this snippet, you should be able to convert every normal parameter store string to a secure string.
-
-**No guarantee for functionality, make sure you have a backup of the parameter store variables**
-
-```
-import boto3
-client = boto3.client('ssm')
-response = client.describe_parameters()
-nameList = []
-dic = {}
-dic_descr = {}
-
-for p in response['Parameters']:
-    nameList.append(p['Name'])
-    dic_descr[p['Name']] = p.get('Description')
-
-nextToken_Str = response['NextToken']
-
-while nextToken_Str:
-    response = client.describe_parameters(NextToken=nextToken_Str)
-    
-    for p in response['Parameters']:
-        nameList.append(p['Name'])
-        dic_descr[p['Name']] = p.get('Description')
-    
-    nextToken_Str = response.get('NextToken', None)
-        
-for name in nameList:
-    response = client.get_parameter(Name=name, WithDecryption=True)
-    dic[name] = response.get('Parameter').get('Value')
-
-
-for name in dic:
-    if dic_descr[name] is not None:
-        print(client.put_parameter(
-            Name=name,
-            Description=dic_descr[name],
-            Value=dic[name],
-            Type='SecureString',
-            Overwrite=True
-        ))
-    else:
-        print(client.put_parameter(
-            Name=name,
-            Value=dic[name],
-            Type='SecureString',
-            Overwrite=True
-        ))
-
-```
-
-**Client/You**
-
-With
-
-```
-aenv -e <env>
-```
-
-you can launch aenv for every in the parameterstore defined environment.
-
-If you don't set any aenv swtiches to "Dev"
-
-**AWS Server**
-
-when aenv runs on an aws machine you could run it with "-e \<env>" but this is rather inconvenient. So aenv queries the instance tags and searches for the key "environment" and uses its value as the current environment. If the environment tag is not set and you did not provide an environment with "-e" aenv automatically defaults to "Dev"
-
-
-## How to access the environment variables
-
-To access those environment variables you have to run your application/service with aenv.
-
-```
-aenv java -jar service.jar
-//or
-aenv python service2.py
-```
-
-Now these two services have all environment variables for their service and environment available and can work with them here are two easy examples:
-
-**Python:**
-
-```
-import os
-os.getenv('SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD')
-
-#or let's say you want to fetch an API, but need an API token in a header request:
-....
-
-header = { 'Api-Key' : os.getenv('SECRET_CUSTOMERMANAGEMENT_API_KEY') }
-....
-
-```
-
-**Kotlin:**
-
-```
-val envVar : String? = System.getenv("varname")
-//there are some other examples feel free to look into https://stackoverflow.com/ but I like this approach because environment variables can be null, bus null handling probably comes down to your use-case/coding style.
-```
 
 ## Authentication
 
 **AWS Server:**
 
 Easy!
-Done by boto3 automatically uses in instance role defined permissions.
+
+Done by boto3. Boto3 automatically uses the in the instance role defined permissions.
 
 (Details "Permissions" section)
 
@@ -386,15 +449,11 @@ aenv -h
 
 **MFA**
 
-First of all multi-factor authentication is highly suggested!
+Multi-factor authentication is highly suggested!
 
 https://lmgtfy.com/?q=why+mfa+is+important
 
 Ok, all jokes aside especially for production parameters your IAM users should require MFA authentication at least for production parameters.
-
-So even when a password/account from one of your users gets compromised and let's be realistic here, this will definitely happen to your company/project so better prepare for that event!
-
-"How can we mitigate the damage" 
 
 At least in my humble opinion, this should be a "better be safe than sorry" point.
 
@@ -403,13 +462,13 @@ Especially for your production systems!
 AEnv supports multiple MFA options, details in the "Usage" section, here the short overview:
 
 ```
-# normal virtual mfa token:
+# Normal virtual mfa token:
 aenv -t <TOKEN>
 
-#askt for the token during runtime:
+# Asks for the token during runtime:
 aenv -T
 
-# leads to:
+# leads to an interactive token query during runtime:
 $ aenv -T
 $ Please enter token: 
 
@@ -418,57 +477,29 @@ aenv -Y
 
 ```
 
-At the moment aws-CLI only supports virtual MFA devices(so the -Y option uses the virtual MFA function of your yubikey (ykman) as a workaround until awscli supports hardware tokens ), but feel free to drop a comment or investigate here:
+## Todos
 
-https://github.com/aws/aws-cli/issues/3607
-
-
-## Permissions: IAM policies / Instance roles
-
-| Permission | Used in the code | Documentation | Comment 
-| :- | :- | :- | :-
-| "ec2:DescribeTags" | clientEC2.describe_tags() | https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeTags.html |
-| "sts:GetCallerIdentity" | clientSTS.get_caller_identity() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetCallerIdentity.html | Optional(No permissions are required to perform this operation.)
-| "sts:GetSessionToken" | clientSTS.get_session_token() | https://docs.aws.amazon.com/STS/latest/APIReference/API_GetSessionToken.html |
-| "ssm:GetParametersByPath" | clientSSMMFA.get_parameters_by_path() | https://docs.aws.amazon.com/systems-manager/latest/userguide/sysman-paramstore-access.html |
-| "iam:ListMFADevices" | boto3.client('iam').list_mfa_devices() | https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_iam_mfa-selfmanage.html | Optional! (At the moment not in use but as soon aws API supports hardware tokens this can be enabled to let aenv support hardware MFA's) 
-
-**tldr Minimal permissions:**
-
-“ec2:DescribeTags”
-
-“sts:GetSessionToken”
-
-“ssm:GetParametersByPath”
-
-## Setup
-
-1. Define environment variables as described in **Format for these environment variables**
-2. Set environment tag's for your instances as described in **AWS Server**
-3. Create/adjust your instance roles/IAM roles with proper permissions as described in 
-
-**Permissions**
-
-## Todo
-
-* introduce new pip package "aenv" (last update to https://pypi.org/project/credopy/) + and rework repo
+* refactor whole code base
+* Add better permission error handling (Especially the auth part)
+* Add check if service exists/can be read with proper error message
 * Update and correct -h / --help output
 * Add regex filter for only loading specific variables
 * Add regex filter to leave out variables from loading
 * remove -q and add -v mode 
-* Update initial setup instructions + consol output for this(ykman + output for missing service)
+* add -P to save a default profile
+* Update initial setup instructions + console output for this(ykman + output for missing service)
 * Option to list all available environments / services(discover/list env / list services)
 * Check for ykman on -Y calls improve output
-* get rid of environment detection and only rely on -e flag (also no default + better output for missing environment)
 * Currently only the fist MFA device of any given account is used -> add mfa device selection + option for default selection
-* cleanup/refactor documentation / improve overal structure
-* add only only auth mode
+* cleanup/refactor documentation / improve overall structure
+* add auth only mode(no env and no service name given)
 * Add more information about container mode and necessary IAM permissions
 * Enhance local profile/config setup/usage
+* Handle the region in the same way services are handled
 * Load multiple services at once instead of concatenating multiple aenv calls ( "aenv -s Service1 aenv -s Service2 ")
-* Load environment tags for ECS container / for task
-* Add testing
 * Add feature for only loading certain variables to speed up loading
+* Add assume role feature to support this setup more ease -> https://aws.amazon.com/de/blogs/security/enhance-programmatic-access-for-iam-users-using-yubikey-for-multi-factor-authentication/
+* Add testing
 
 ## Acknowledgments 
 

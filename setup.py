@@ -7,11 +7,11 @@ def readme():
 
 
 setup(name='aenv',
-      version='2.0.0',
+      version='2.0.1',
       description='A Python 3 tool to fetch secure strings from the aws parameter store and injecting those into environment variables.',
       long_description=readme(),
       long_description_content_type='text/markdown',
-      download_url='https://github.com/MartinWie/AEnv/archive/2.0.0.tar.gz',
+      download_url='https://github.com/MartinWie/AEnv/archive/2.0.1.tar.gz',
       entry_points={
           'console_scripts': [
               'aenv=aenv.aenv:main'
