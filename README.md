@@ -1,10 +1,30 @@
-# AEnv former CredoPy!
+# AEnv
 
 [![OS](https://img.shields.io/badge/Runs%20on%3A-Linux%20%7C%20Mac%20%7C%20Windows-green)]() [![RunsOn](https://img.shields.io/badge/Used%20technologies-AWS%20%7C%20Python%203-green)]() [![RunsOn](https://img.shields.io/github/license/MartinWie/AEnv)](https://github.com/MartinWie/AEnv/blob/master/LICENSE) [![Open Source](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://opensource.org/)
 
 ![AEnv](https://github.com/MartinWie/AEnv/blob/master/AEnv_logo.png)
 
-## A tool to dynamically inject AWS Parameter Store entries as environment variables, based on environment and service name.
+A Python-based CLI tool to simplify the process of fetching and injecting environment variables from AWS Parameter Store.
+
+## Table of Contents
+
+1. [Description](#description)
+2. [Installation](#installation)
+3. [Usage](#Usage)
+4. [Setup](#Setup)
+5. [Permissions](#Permissions)
+6. [Concept](#Concept)
+7. [Access parameter store entries](#Access parameter store entries)
+8. [Authentication](#Authentication)
+9. [Todos](#Todos)
+10. [Acknowledgments](#Acknowledgments)
+11. [License](#License)
+
+## Description
+
+This CLI tool (`aenv`) allows you to fetch environment variables from AWS Parameter Store, injecting them into your local environment for use in your applications. The tool also supports authentication with MFA, including Yubikeys.
+
+
 
 ## Installation
 
@@ -23,44 +43,45 @@
 pip install aenv
 ```
 
-### Optional - Yubikey support
-
-To support YubiKey authentication with OATH (YubiKey as a virtual device MFA)
-
-[YubiKey Manager CLI](https://github.com/Yubico/yubikey-manager#installation)
 
 
-### Discontinued pydo package
-
-Can still be installed, but will not receive any future updates.
+## Usage
 
 ```
-pip install credopy
+aenv --help
+# or
+aenv -h
 ```
 
-
-## No passwords in code!
-
-Improve your projects' security without over engineering access to credentials.
-
-AEnv can be used to dynamically inject AWS Parameter Store entries, based on environment and service as environment variables.
-
-By injecting all relevant credentials as environment variables, we have them easily available without directly storing them in our codebase.
-
-With the added bonus of a straight forward environment separation in your code. Just run "aenv -e Dev" and your service gets all development environment variables.
-
-## Getting started / Setup & Usage
-
-At first, make sure you have installed the AWS CLI + the respective setup to use the CLI.
-Depending on your permissions, you can run the following command to check if your CLI is working:
-
+All current options:
 ```
-aws sts get-caller-identity
+aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 ```
 
-After that, make sure you have installed the aenv python package.
+| Option | explanation | sample | comment 
+| :- | :- | :- | :-
+|-h | Shows help | aenv -h |
+|-i | Starts aenv in interactive mode | aenv -i | Gives you a command line that you can interact with |
+|-s \<service/application> | For which service should the environment variables be loaded? | aenv -s CustomerService
+|-S | Sets a default service for aenv and writes it to a config file | aenv -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
+|-n | Do not query the parameter store at all  | aenv -n | Can be used to auth the current session with MFA
+|-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | aenv -e Prod | 
+|-t \<2fa key> | Takes the 2FA key from your aws account | aenv -t 987123
+|-T | Lets you type in the 2FA key from your aws account during runtime | aenv -T | When you run your command aenv will ask for the token |
+|-Y | Uses Yubikey for MFA auth | aenv -Y | During runtime aenv will use ykman to fetch the MFA-Key from your yubikey
+|-r \<region> | Overwrites temporary the awscli default region | aenv -r eu-central-1 | aenv will use the given region for example Frankfurt
+|-q | Quiet mode (less output) | aenv -q |
+|-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -u user@example.de |
+|-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -a 999999999999 | 
+|-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile | aenv -p testUser1
+|-c \<aws profile> | Container mode(enable this to make aenv work in ecs and codebuild) | aenv -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
+|\<command> | Is the command to execute with environment variables injected. | aenv code | Will run VS Code with access to given environment variables
 
-Now we can start with setting up a simple example service. Let's call it **UserService**. 
+
+
+## Setup
+
+Lets start with setting up a simple example service. Let's call it **UserService**. 
 
 The **UserService** needs a **database hostname**, a **database username** and a **database password**. 
 
@@ -108,92 +129,9 @@ aenv -e Dev -s UserService python service2.py
 
 Both services now have access to the environment variable "SECRET_USERSERVICE_DB_HOSTNAME" containing the value that we defined for "/Dev/UserService/DB/hostname".
 
+## Permissions
 
-## Details 
-
-### General concept
-
-AEnv uses the parameter store path to define the environment and service name, following this schema:
-
-```
-/<Environment>/<Service-Name>/
-
-# Which could look like:
-/Prod/CustomerManagement/DB/USER
-# Or
-/Prod/CustomerManagement/DB/PASSWORD
-```
-
-Having those two in place would enable our **CustomerManagement** service running in our Prod environment to access, the environment variables:
-SECRET_CUSTOMERMANAGEMENT_DB_USER
-and 
-SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD
-
-With both parameters in place, your **CustomerManagement** application/service, launched with aenv, could now access the database with the provided username and password.
-
-```
-aenv -e Prod -s CustomerManagement java -jar service.jar
-```
-
-#### Format for these environment variables:
-
-Every environment variable that is loaded with aenv starts with "SECRET_".
-
-Then the service-name and path, separated by underliners. (of course in upper case)
-
-For example: 
-
-```
-/Prod/CustomerManagement/DB/USER
-```
-
-would be accessible with:
-
-```
-SECRET_CUSTOMERMANAGEMENT_DB_USER
-```
-
-or
-
-```
-/Prod/CustomerManagement/DB/PASSWORD/USER1
-```
-
-would be accessible with:
-
-```
-SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD_USER1
-```
-
-More about environment variables: [Guide to Unix/Environment Variables](https://en.wikibooks.org/wiki/Guide_to_Unix/Environment_Variables)
-
-#### Testing single variables
-**Linux/Mac**
-
-```
-aenv -e Dev -s UserService echo '$SECRET_USERSERVICE_UI_URL'
-```
-
-or
-
-**Windows**
-
-```
-aenv -e Dev -s UserService echo %SECRET_USERSERVICE_UI_URL%  
-```
-
-### Bonus:
-#### Running a local application with access to environment variables of a given service
-
-Linux/Mac running IntelliJ with Test environment variables for the **UserService**
-
-```
-aenv -e Test -s UserService "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
-```
-
-This can come in handy if you want to debug something that only seems to occure in the Test environment. 
-
-### Permissions (setup example)
+### Permissions (User)
 
 Here is the minimal suggested set of IAM permissions to use aenv for all services that can be found for our Dev environment:
 
@@ -239,93 +177,19 @@ To further limit access to only allow loading environment variables for a specif
             ]
 ```
 
-### Detail usage
 
-For the help page run:
 
-```
-aenv --help
-# or
-aenv -h
-```
-
-All current options:
-```
-aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
-```
-
-| Option | explanation | sample | comment 
-| :- | :- | :- | :-
-|-h | Shows help | aenv -h |
-|-i | Starts aenv in interactive mode | aenv -i | Gives you a command line that you can interact with |
-|-s \<service/application> | For which service should the environment variables be loaded? | aenv -s CustomerService
-|-S | Sets a default service for aenv and writes it to a config file | aenv -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
-|-n | Do not query the parameter store at all  | aenv -n | Can be used to auth the current session with MFA
-|-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | aenv -e Prod | 
-|-t \<2fa key> | Takes the 2FA key from your aws account | aenv -t 987123
-|-T | Lets you type in the 2FA key from your aws account during runtime | aenv -T | When you run your command aenv will ask for the token |
-|-Y | Uses Yubikey for MFA auth | aenv -Y | During runtime aenv will use ykman to fetch the MFA-Key from your yubikey
-|-r \<region> | Overwrites temporary the awscli default region | aenv -r eu-central-1 | aenv will use the given region for example Frankfurt
-|-q | Quiet mode (less output) | aenv -q |
-|-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -u user@example.de |
-|-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -a 999999999999 | 
-|-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile | aenv -p testUser1
-|-c \<aws profile> | Container mode(enable this to make aenv work in ecs and codebuild) | aenv -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
-|\<command> | Is the command to execute with environment variables injected. | aenv code | Will run VS Code with access to given environment variables
-
-### How to access the environment variables in Kotlin and Python
-
-#### How to access the environment variables
-
-To access those environment variables you have to run your application/service with aenv.
-
-```
-aenv -e Dev -s UserService java -jar service.jar
-//or
-aenv -e Dev -s UserService python service2.py
-```
-
-Now these two services have access to all Dev environment variables for the UserService.
-Here are easy examples for Python and Kotlin:
-
-**Python:**
-
-```
-import os
-os.getenv('SECRET_USERSERVICE_HOSTNAME')
-
-# For example conneting to a host depending on the environment:
-....
-
-hostname = os.getenv('SECRET_USERSERVICE_HOSTNAME')
-....
-
-```
-
-**Kotlin:**
-
-```
-val envVar : String? = System.getenv("SECRET_USERSERVICE_HOSTNAME")
-```
-
-### 5) MFA and Yubikey setup
-
-#### Local setup
-
-To use the Yubikey form our command line aenv uses ykman from yubico.
-Quick OS-indipendant install via PIP:
-
-```
-pip install --user yubikey-manager
-```
-[Official documentation](https://docs.yubico.com/software/yubikey/tools/ykman/Install_ykman.html)
-
-#### AWS setup
+#### Permissions (AWS)
 
 This is a work in progress!
 
 Currently, the yubikey needs to be added as a **virtual mfa** and needs to be the **first** device in our Multi-factor authentication devices.
 Feel free to also add your Yubikey as a hardware mfa **afterwards**.(The AWS web console works flawless with multiple mfa's)
+
+```
+pip install --user yubikey-manager
+```
+[Official documentation](https://docs.yubico.com/software/yubikey/tools/ykman/Install_ykman.html)
 
 
 ## Permissions (IAM policies / Instance roles)
@@ -418,6 +282,129 @@ aenv -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/exa
 # -n puts aenv in only authentication mode
 # -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
 ```
+
+
+## Concept
+
+AEnv uses the parameter store path to define the environment and service name, following this schema:
+
+```
+/<Environment>/<Service-Name>/
+
+# Which could look like:
+/Prod/CustomerManagement/DB/USER
+# Or
+/Prod/CustomerManagement/DB/PASSWORD
+```
+
+Having those two in place would enable our **CustomerManagement** service running in our Prod environment to access, the environment variables:
+SECRET_CUSTOMERMANAGEMENT_DB_USER
+and 
+SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD
+
+With both parameters in place, your **CustomerManagement** application/service, launched with aenv, could now access the database with the provided username and password.
+
+```
+aenv -e Prod -s CustomerManagement java -jar service.jar
+```
+
+#### Format for these environment variables:
+
+Every environment variable that is loaded with aenv starts with "SECRET_".
+
+Then the service-name and path, separated by underliners. (of course in upper case)
+
+For example: 
+
+```
+/Prod/CustomerManagement/DB/USER
+```
+
+would be accessible with:
+
+```
+SECRET_CUSTOMERMANAGEMENT_DB_USER
+```
+
+or
+
+```
+/Prod/CustomerManagement/DB/PASSWORD/USER1
+```
+
+would be accessible with:
+
+```
+SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD_USER1
+```
+
+More about environment variables: [Guide to Unix/Environment Variables](https://en.wikibooks.org/wiki/Guide_to_Unix/Environment_Variables)
+
+
+## Access parameter store entries
+
+#### Testing single variables
+**Linux/Mac**
+
+```
+aenv -e Dev -s UserService echo '$SECRET_USERSERVICE_UI_URL'
+```
+
+or
+
+**Windows**
+
+```
+aenv -e Dev -s UserService echo %SECRET_USERSERVICE_UI_URL%  
+```
+
+
+### How to access the environment variables in Kotlin and Python
+
+#### How to access the environment variables
+
+To access those environment variables you have to run your application/service with aenv.
+
+```
+aenv -e Dev -s UserService java -jar service.jar
+//or
+aenv -e Dev -s UserService python service2.py
+```
+
+Now these two services have access to all Dev environment variables for the UserService.
+Here are easy examples for Python and Kotlin:
+
+**Python:**
+
+```
+import os
+os.getenv('SECRET_USERSERVICE_HOSTNAME')
+
+# For example conneting to a host depending on the environment:
+....
+
+hostname = os.getenv('SECRET_USERSERVICE_HOSTNAME')
+....
+
+```
+
+**Kotlin:**
+
+```
+val envVar : String? = System.getenv("SECRET_USERSERVICE_HOSTNAME")
+```
+
+### Bonus:
+#### Running a local application with access to environment variables of a given service
+
+Linux/Mac running IntelliJ with Test environment variables for the **UserService**
+
+```
+aenv -e Test -s UserService "/Applications/IntelliJ\ IDEA\ CE.app/Contents/MacOS/idea"
+```
+
+This can come in handy if you want to debug something that only seems to occure in the Test environment. 
+
 
 
 ## Authentication
