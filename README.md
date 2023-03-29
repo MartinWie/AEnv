@@ -14,7 +14,7 @@ A Python-based CLI tool to simplify the process of fetching and injecting enviro
 4. [Setup](#Setup)
 5. [Permissions](#Permissions)
 6. [Concept](#Concept)
-7. [Access parameter store entries](#Access parameter store entries)
+7. [Access-parameter-store-entries](#Access-parameter-store-entries)
 8. [Authentication](#Authentication)
 9. [Todos](#Todos)
 10. [Acknowledgments](#Acknowledgments)
@@ -341,7 +341,7 @@ SECRET_CUSTOMERMANAGEMENT_DB_PASSWORD_USER1
 More about environment variables: [Guide to Unix/Environment Variables](https://en.wikibooks.org/wiki/Guide_to_Unix/Environment_Variables)
 
 
-## Access parameter store entries
+## Access-parameter-store-entries
 
 #### Testing single variables
 **Linux/Mac**
