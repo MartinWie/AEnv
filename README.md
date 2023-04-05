@@ -466,6 +466,10 @@ aenv -Y
 
 ## Todos
 
+* Add managing mode with TerminalMenu to read specific values 
+  * Function to add new entries
+  * Function to update existing entries
+  * Function to delete existing entries
 * refactor whole code base
 * Add better permission error handling (Especially the auth part)
 * Add check if service exists/can be read with proper error message
