@@ -244,6 +244,12 @@ def getBotoClients():
                         aws_secret_access_key=aws_secret_access_key
                     )
                 else:
+                    aws_container_credentials_uri = os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI")
+                    if aws_container_credentials_uri is None:
+                        print("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI environment variable is not available. "
+                              "Could not find relevant AWS credentials.")
+                        sys.exit()
+
                     containerCredentials = urllib.request.urlopen(
                         'http://169.254.170.2' + os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"),
                         timeout=2
@@ -259,8 +265,14 @@ def getBotoClients():
             os.environ['SESSION_REGION_NAME'] = session.region_name
             clientSTS = session.client('sts')
             clientEC2 = session.client('ec2')
+        except urllib.error.URLError as e:
+            print("Error accessing container credentials: " + str(e))
+            sys.exit()
+        except boto3.exceptions.Boto3Error as e:
+            print("Boto3 error: " + str(e))
+            sys.exit()
         except Exception as e:
-            print("Wrong profile name and/or region! Exception: " + str(e))
+            print("An unexpected error occurred: " + str(e))
             sys.exit()
     else:
         clientSTS = boto3.client('sts', region_name=sessionRegion)
