@@ -149,33 +149,35 @@ def aenvConfigWrite(key, value):
 
 
 def getSessionData():
-    # get current default region/profil name
-    tmpSession = boto3.session.Session()
-    if tmpSession.region_name is None:
-        # Did not found a better way to get current region
-        # If run on an ec2 instance definitely open for more elegant approaches
-        sessionRegion = urllib.request.urlopen(
-            'http://169.254.169.254/latest/meta-data/placement/availability-zone',
-            timeout=2
-        ).read().decode()[:-1]
+    # Check if custom session data was provided via environment variables first
+    sessionRegion = os.getenv('AWS_REGION')
+    sessionProfileName = os.getenv('PROFILENAME')
 
-        # When we are here we know, that we are on an ec2 instance so we also can fetch the right instance-id
-        os.environ['INSTANCEID'] = urllib.request.urlopen(
-            'http://169.254.169.254/latest/meta-data/instance-id',
-            timeout=2
-        ).read().decode()
-        sessionProfileName = None
-    else:
-        sessionRegion = tmpSession.region_name
-        sessionProfileName = tmpSession.profile_name
+    # Only attempt to retrieve data from metadata service if AWS_REGION is not set
+    if sessionRegion is None:
+        tmpSession = boto3.session.Session()
+        if tmpSession.region_name is None:
+            # Attempt to retrieve region from EC2 instance metadata service
+            try:
+                sessionRegion = urllib.request.urlopen(
+                    'http://169.254.169.254/latest/meta-data/placement/availability-zone',
+                    timeout=10  # Increased timeout
+                ).read().decode()[:-1]
 
-    # Check if custom sessiondata was provided
-    if os.getenv('AWS_REGION') is not None:
-        sessionRegion = os.getenv('AWS_REGION')
+                # Fetch instance ID as well
+                os.environ['INSTANCEID'] = urllib.request.urlopen(
+                    'http://169.254.169.254/latest/meta-data/instance-id',
+                    timeout=10
+                ).read().decode()
+            except Exception as e:
+                print(f"Unable to access metadata service: {e}")
+                # Handle the error or set default values
+        else:
+            # Use region and profile name from boto3 session
+            sessionRegion = tmpSession.region_name
+            sessionProfileName = tmpSession.profile_name
 
-    if os.getenv('PROFILENAME') is not None:
-        sessionProfileName = os.getenv('PROFILENAME')
-
+    # Return the region and profile name
     return (sessionRegion, sessionProfileName)
 
 
@@ -228,25 +230,37 @@ def getBotoClients():
 
     sessionRegion, sessionProfileName = getSessionData()
 
-    if (useSession):
+    if useSession:
         try:
             if os.getenv('CONTAINERMODE') == 'true':
-                containerCredentials = urllib.request.urlopen(
-                    'http://169.254.170.2' + os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"),
-                    timeout=2
-                ).read().decode()
-                session = boto3.Session(
-                    region_name=sessionRegion,
-                    aws_access_key_id=containerCredentials["AccessKeyId"],
-                    aws_secret_access_key=containerCredentials["SecretAccessKey"]
-                )
+                aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+                aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+                if aws_access_key_id and aws_secret_access_key:
+                    # Use the existing credentials
+                    session = boto3.Session(
+                        region_name=sessionRegion,  # Assuming sessionRegion is defined elsewhere
+                        aws_access_key_id=aws_access_key_id,
+                        aws_secret_access_key=aws_secret_access_key
+                    )
+                else:
+                    containerCredentials = urllib.request.urlopen(
+                        'http://169.254.170.2' + os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI"),
+                        timeout=2
+                    ).read().decode()
+                    session = boto3.Session(
+                        region_name=sessionRegion,
+                        aws_access_key_id=containerCredentials["AccessKeyId"],
+                        aws_secret_access_key=containerCredentials["SecretAccessKey"]
+                    )
             else:
                 session = boto3.Session(profile_name=sessionProfileName, region_name=sessionRegion)
+
             os.environ['SESSION_REGION_NAME'] = session.region_name
             clientSTS = session.client('sts')
             clientEC2 = session.client('ec2')
         except Exception as e:
-            print("Wrong profile name and/or region! Exception: " + e)
+            print("Wrong profile name and/or region! Exception: " + str(e))
             sys.exit()
     else:
         clientSTS = boto3.client('sts', region_name=sessionRegion)
@@ -413,6 +427,11 @@ def main():
     check(sys.argv[1:])
 
     aenvConfigPath, aenvDir, configExists = getCofigPath()
+
+    if os.environ.get('CONTAINERMODE') is not None:
+        if 'AWS_REGION' not in os.environ:
+            print('Container mode enabled! Please make sure to also set the region!')
+            sys.exit()
 
     if configExists:
         aenvLoadConfig(aenvConfigRead(aenvConfigPath))
