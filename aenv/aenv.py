@@ -436,27 +436,33 @@ def app():
 
 
 def main():
-    check(sys.argv[1:])
+    try:
+        check(sys.argv[1:])
 
-    aenvConfigPath, aenvDir, configExists = getCofigPath()
+        aenvConfigPath, aenvDir, configExists = getCofigPath()
 
-    if os.environ.get('CONTAINERMODE') is not None:
-        if 'AWS_REGION' not in os.environ:
-            print('Container mode enabled! Please make sure to also set the region!')
+        if os.environ.get('CONTAINERMODE') is not None:
+            if 'AWS_REGION' not in os.environ:
+                print('Container mode enabled! Please make sure to also set the region!')
+                sys.exit()
+
+        if configExists:
+            aenvLoadConfig(aenvConfigRead(aenvConfigPath))
+
+        if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
+            print("Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
             sys.exit()
 
-    if configExists:
-        aenvLoadConfig(aenvConfigRead(aenvConfigPath))
+        if os.getenv('OVERRIDE_ENV') is None and os.getenv('ENVIRONMENT') is None:
+            print("Please define an environment with aenv -e <ENVIRONMENT>.")
+            sys.exit()
 
-    if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
-        print("Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
-        sys.exit()
-
-    if os.getenv('OVERRIDE_ENV') is None and os.getenv('ENVIRONMENT') is None:
-        print("Please define an environment with aenv -e <ENVIRONMENT>.")
-        sys.exit()
-
-    app()
+        app()
+    except Exception as e:
+        import traceback
+        print("An error occurred:", str(e))
+        print("Traceback:")
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
