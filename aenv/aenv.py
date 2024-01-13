@@ -1,13 +1,22 @@
 #!/usr/bin/env python
 
-import sys, getopt, os, boto3, urllib.request
-from pathlib import Path
-from os import path
+import boto3
+import getopt
+import logging
+import os
+import sys
+import urllib.request
 from configparser import ConfigParser
+from os import path
+from pathlib import Path
+
+from botocore.exceptions import ClientError, BotoCoreError
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def help():
-    print("""Usage:
+    logging.info("""Usage:
   aenv [-s <service/application>] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 
   Options:
@@ -170,7 +179,7 @@ def getSessionData():
                     timeout=10
                 ).read().decode()
             except Exception as e:
-                print(f"Unable to access metadata service: {e}")
+                logging.error(f"Unable to access metadata service: {e}")
                 # Handle the error or set default values
         else:
             # Use region and profile name from boto3 session
@@ -182,32 +191,32 @@ def getSessionData():
 
 
 def printInfo():
-    print("ENVIRONMENT: " + os.getenv('ENVIRONMENT'))
+    logging.info("ENVIRONMENT: " + os.getenv('ENVIRONMENT'))
 
     if os.getenv('CONTAINERMODE') == 'true':
-        print('Container mode enabled!')
+        logging.info('Container mode enabled!')
 
     if os.getenv('CREDO_NO_AWS') == 'true':
-        print('Skipped fetching parameters from AWS.')
+        logging.info('Skipped fetching parameters from AWS.')
 
     if os.getenv('AVAILABILITY_ZONE') is not None:
-        print('ZONE: ' + os.getenv('AVAILABILITY_ZONE'))
+        logging.info('ZONE: ' + os.getenv('AVAILABILITY_ZONE'))
 
     if os.getenv('INSTANCEID') is not None:
-        print('INSTANCE: ' + os.getenv('INSTANCEID'))
+        logging.info('INSTANCE: ' + os.getenv('INSTANCEID'))
 
     sessionRegion, sessionProfileName = getSessionData()
-    print('REGION: ' + sessionRegion)
+    logging.info('REGION: ' + sessionRegion)
     if sessionProfileName is not None:
-        print('PROFILNAME:' + sessionProfileName)
+        logging.info('PROFILNAME:' + sessionProfileName)
 
     if os.getenv('AWS_USERNAME') is not None:
-        print('AWS_USERNAME: ' + os.getenv('AWS_USERNAME'))
+        logging.info('AWS_USERNAME: ' + os.getenv('AWS_USERNAME'))
 
     if os.getenv('AWS_ACCOUNT') is not None:
-        print('AWS_ACCOUNT: ' + os.getenv('AWS_ACCOUNT'))
+        logging.info('AWS_ACCOUNT: ' + os.getenv('AWS_ACCOUNT'))
 
-    print('')
+    logging.info('')
 
 
 def getAWSUsernameAndAccount(clientSTS):
@@ -246,8 +255,8 @@ def getBotoClients():
                 else:
                     aws_container_credentials_uri = os.getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI")
                     if aws_container_credentials_uri is None:
-                        print("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI environment variable is not available. "
-                              "Could not find relevant AWS credentials.")
+                        logging.error("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI environment variable is not available. "
+                                      "Could not find relevant AWS credentials.")
                         sys.exit()
 
                     containerCredentials = urllib.request.urlopen(
@@ -266,13 +275,16 @@ def getBotoClients():
             clientSTS = session.client('sts')
             clientEC2 = session.client('ec2')
         except urllib.error.URLError as e:
-            print("Error accessing container credentials: " + str(e))
+            logging.error("Error accessing container credentials: " + str(e))
             sys.exit()
+        except ClientError as e:
+            logging.error(f"AWS ClientError: {e}")
+            sys.exit("Failed to create AWS boto clients due to client error.")
         except boto3.exceptions.Boto3Error as e:
-            print("Boto3 error: " + str(e))
+            logging.error("Boto3 error: " + str(e))
             sys.exit()
         except Exception as e:
-            print("An unexpected error occurred: " + str(e))
+            logging.error("An unexpected error occurred: " + str(e))
             sys.exit()
     else:
         clientSTS = boto3.client('sts', region_name=sessionRegion)
@@ -329,10 +341,12 @@ def app():
                 SerialNumber=serialNumber,
                 TokenCode=os.getenv('TOKEN')
             )
-        except:
-            print('Wrong MFA token or MFA device(aenv currently only supports virtual MFA devices)')
-            print("Feel free to drop a comment about this: https://github.com/aws/aws-cli/issues/3607")
-            sys.exit()
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'UnrecognizedClientException':
+                logging.error("Unrecognized AWS client. Please check your credentials.")
+            else:
+                logging.error(f"AWS Client Error: {e}")
+            sys.exit("Failed to authenticate with AWS.")
 
     if os.getenv('AENV_NO_PARAMETER') == 'true':
         pass
@@ -389,7 +403,7 @@ def app():
 
         for r in response['Parameters']:
             if not quietMode:
-                print("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
+                logging.info("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
                                                                                                                    "_").upper())
             os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
                                                                                                                     "_").upper()] = \
@@ -406,7 +420,7 @@ def app():
             )
             for r in response['Parameters']:
                 if not quietMode:
-                    print("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace(
+                    logging.info("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace(
                         "/", "_").upper())
                 os.environ[
                     "SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
@@ -427,8 +441,8 @@ def app():
             os.system('call ' + ' '.join(args))
 
     if os.getenv('INTERACTIVE') == 'true':
-        print('Starting an interactive command-line...')
-        print('Environment: ' + os.getenv('ENVIRONMENT'))
+        logging.info('Starting an interactive command-line...')
+        logging.info('Environment: ' + os.getenv('ENVIRONMENT'))
         if not isWindows:
             os.system('bash')
         else:
@@ -443,25 +457,26 @@ def main():
 
         if os.environ.get('CONTAINERMODE') is not None:
             if 'AWS_REGION' not in os.environ:
-                print('Container mode enabled! Please make sure to also set the region!')
+                logging.info('Container mode enabled! Please make sure to also set the region!')
                 sys.exit()
 
         if configExists:
             aenvLoadConfig(aenvConfigRead(aenvConfigPath))
 
         if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
-            print("Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
+            logging.info(
+                "Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
             sys.exit()
 
         if os.getenv('OVERRIDE_ENV') is None and os.getenv('ENVIRONMENT') is None:
-            print("Please define an environment with aenv -e <ENVIRONMENT>.")
+            logging.info("Please define an environment with aenv -e <ENVIRONMENT>.")
             sys.exit()
 
         app()
     except Exception as e:
         import traceback
-        print("An error occurred:", str(e))
-        print("Traceback:")
+        logging.error("An error occurred: " + str(e))
+        logging.error("Traceback:")
         traceback.print_exc()
 
 
