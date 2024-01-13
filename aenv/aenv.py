@@ -9,7 +9,6 @@ import urllib.request
 from configparser import ConfigParser
 from os import path
 from pathlib import Path
-
 from botocore.exceptions import ClientError, BotoCoreError
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -393,17 +392,27 @@ def app():
 
         ssmPath = "/" + os.getenv('ENVIRONMENT') + "/" + os.getenv('SERVICE') + "/"
 
-        response = clientSSMMFA.get_parameters_by_path(
-            Path=ssmPath,
-            Recursive=True,
-            WithDecryption=True
-        )
+        try:
+            response = clientSSMMFA.get_parameters_by_path(
+                Path=ssmPath,
+                Recursive=True,
+                WithDecryption=True
+            )
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            error_message = e.response['Error']['Message']
+            logging.error("ClientError occurred while getting parameters by path: %s - %s", error_code, error_message)
+            sys.exit()
+        except Exception as e:
+            logging.error("An unexpected error occurred: %s", str(e))
+            sys.exit()
+
 
         quietMode = isQuietModeEnabled()
 
         for r in response['Parameters']:
             if not quietMode:
-                logging.info("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
+                logging.info("Loaded: SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
                                                                                                                    "_").upper())
             os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
                                                                                                                     "_").upper()] = \
@@ -420,7 +429,7 @@ def app():
             )
             for r in response['Parameters']:
                 if not quietMode:
-                    logging.info("SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace(
+                    logging.info("Loaded: SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace(
                         "/", "_").upper())
                 os.environ[
                     "SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
@@ -450,35 +459,28 @@ def app():
 
 
 def main():
-    try:
-        check(sys.argv[1:])
+    check(sys.argv[1:])
 
-        aenvConfigPath, aenvDir, configExists = getCofigPath()
+    aenvConfigPath, aenvDir, configExists = getCofigPath()
 
-        if os.environ.get('CONTAINERMODE') is not None:
-            if 'AWS_REGION' not in os.environ:
-                logging.info('Container mode enabled! Please make sure to also set the region!')
-                sys.exit()
-
-        if configExists:
-            aenvLoadConfig(aenvConfigRead(aenvConfigPath))
-
-        if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
-            logging.info(
-                "Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
+    if os.environ.get('CONTAINERMODE') is not None:
+        if 'AWS_REGION' not in os.environ:
+            logging.info('Container mode enabled! Please make sure to also set the region!')
             sys.exit()
 
-        if os.getenv('OVERRIDE_ENV') is None and os.getenv('ENVIRONMENT') is None:
-            logging.info("Please define an environment with aenv -e <ENVIRONMENT>.")
-            sys.exit()
+    if configExists:
+        aenvLoadConfig(aenvConfigRead(aenvConfigPath))
 
-        app()
-    except Exception as e:
-        import traceback
-        logging.error("An error occurred: " + str(e))
-        logging.error("Traceback:")
-        traceback.print_exc()
+    if os.getenv('DEFAULTSERVICE') is None and os.getenv('SERVICE') is None:
+        logging.info(
+            "Please configure a default service with aenv -S <DEFAULTSERVICE> or provide a service with -s <SERVICE>")
+        sys.exit()
 
+    if os.getenv('OVERRIDE_ENV') is None and os.getenv('ENVIRONMENT') is None:
+        logging.info("Please define an environment with aenv -e <ENVIRONMENT>.")
+        sys.exit()
+
+    app()
 
 if __name__ == "__main__":
     main()
