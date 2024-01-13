@@ -466,6 +466,7 @@ aenv -Y
 
 ## Todos
 
+* remove -q and add -v mode
 * Add managing mode with TerminalMenu to read specific values 
   * Function to add new entries
   * Function to update existing entries
@@ -476,7 +477,6 @@ aenv -Y
 * Update and correct -h / --help output
 * Add regex filter for only loading specific variables
 * Add regex filter to leave out variables from loading
-* remove -q and add -v mode 
 * add -P to save a default profile
 * Update initial setup instructions + console output for this(ykman + output for missing service)
 * Option to list all available environments / services(discover/list env / list services)
