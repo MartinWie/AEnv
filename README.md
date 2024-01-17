@@ -467,6 +467,7 @@ aenv -Y
 ## Todos
 
 * remove -q and add -v mode
+* Live env updates for running services (IPC with child process that uses threading in the child process)
 * Add managing mode with TerminalMenu to read specific values 
   * Function to add new entries
   * Function to update existing entries
