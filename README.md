@@ -59,7 +59,7 @@ aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 ```
 
 | Option | explanation | sample | comment 
-| :- | :- | :- | :-
+| : | :- | :- | :-
 |-h | Shows help | aenv -h |
 |-i | Starts aenv in interactive mode | aenv -i | Gives you a command line that you can interact with |
 |-s \<service/application> | For which service should the environment variables be loaded? | aenv -s CustomerService
@@ -70,7 +70,7 @@ aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-
 |-T | Lets you type in the 2FA key from your aws account during runtime | aenv -T | When you run your command aenv will ask for the token |
 |-Y | Uses Yubikey for MFA auth | aenv -Y | During runtime aenv will use ykman to fetch the MFA-Key from your yubikey
 |-r \<region> | Overwrites temporary the awscli default region | aenv -r eu-central-1 | aenv will use the given region for example Frankfurt
-|-q | Quiet mode (less output) | aenv -q |
+|-v | Verbose mode (more output) | aenv -v |
 |-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -u user@example.de |
 |-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -a 999999999999 | 
 |-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile | aenv -p testUser1
@@ -276,9 +276,9 @@ Now you need MFA authentication to run assume role commands.
 Sample call for this would be:
 
 ```
-aenv -q -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
+aenv -v -n -Y aws sts assume-role --role-arn "arn:aws:iam::123456789012:role/example-role" --role-session-name AWSCLI-Session
 
-# -q removes the unnecessary output
+# -v enables verbose mode
 # -n puts aenv in only authentication mode
 # -Y authenticates the session with your YubiKey, alternatively you could use -t or -T
 ```
@@ -466,13 +466,12 @@ aenv -Y
 
 ## Todos
 
-* remove -q and add -v mode
 * Add managing mode with TerminalMenu to read specific values 
   * Function to add new entries
   * Function to update existing entries
   * Function to delete existing entries
 * refactor whole code base
-* Add better permission error handling (Especially the auth part)
+* Add better permission error handling (Especially the auth part with Yubikey handling)
 * Add check if service exists/can be read with proper error message
 * Update and correct -h / --help output
 * Add regex filter for only loading specific variables
