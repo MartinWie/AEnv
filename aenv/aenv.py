@@ -13,10 +13,15 @@ from botocore.exceptions import ClientError, BotoCoreError
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# Set the logging level for Boto3 to WARNING to suppress INFO messages
+logging.getLogger('boto3').setLevel(logging.WARNING)
+logging.getLogger('botocore').setLevel(logging.WARNING)
+logging.getLogger('nose').setLevel(logging.WARNING)
+
 
 def help():
     logging.info("""Usage:
-  aenv [-s <service/application>] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
+  aenv [-s <service/application>] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] [-v] <command>
 
   Options:
   -h shows help
@@ -28,7 +33,7 @@ def help():
   -T lets you type in the 2FA key from your aws account during runtime
   -Y uses Yubikey for MFA auth
   -r overwrites/sets a specific region 
-  -q Quiet mode (less output)
+  -v Verbose mode (additional output)
   -u sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws)
   -a sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws)
   -p if multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile
@@ -48,7 +53,7 @@ def help():
 
 # try-catch for wrong parameter usage
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'S:s:t:u:Tnp:ia:qr:ue:hYc')
+    opts, args = getopt.getopt(sys.argv[1:], 'S:s:t:u:Tnp:ia:vr:ue:hYc')
 except:
     help()
     sys.exit()
@@ -77,8 +82,8 @@ def check(argv):
             os.environ['CREDO_NO_AWS'] = 'true'  # Credo compatibility flag
             os.environ['ENVIRONMENT'] = 'Local'
             continue
-        elif opt == '-q':
-            os.environ['AENV_QUIET'] = 'true'
+        elif opt == '-v':
+            os.environ['AENV_VERBOSE'] = 'true'
             continue
         elif opt == '-i':
             os.environ['INTERACTIVE'] = 'true'
@@ -111,6 +116,12 @@ def check(argv):
         else:
             help()
             sys.exit()
+
+
+def isVerboseModeEnabled():
+    if os.getenv('AENV_VERBOSE') is not None:
+        return True
+    return False
 
 
 def getCofigPath():
@@ -292,13 +303,6 @@ def getBotoClients():
     return (clientSTS, clientEC2)
 
 
-def isQuietModeEnabled():
-    if os.getenv('AENV_QUIET') is None:
-        printInfo()
-        return False
-    return True
-
-
 def app():
     if os.getenv('SERVICE') is None:
         os.environ['SERVICE'] = os.getenv('DEFAULTSERVICE')
@@ -407,16 +411,15 @@ def app():
             logging.error("An unexpected error occurred: %s", str(e))
             sys.exit()
 
+        verboseMode = isVerboseModeEnabled()
 
-        quietMode = isQuietModeEnabled()
+        if verboseMode:
+            printInfo()
 
         for r in response['Parameters']:
-            if not quietMode:
-                logging.info("Loaded: SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
-                                                                                                                   "_").upper())
-            os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
-                                                                                                                    "_").upper()] = \
-                r['Value']
+            if verboseMode:
+                logging.info("Loaded: SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/", "_").upper())
+            os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/", "_").upper()] = r['Value']
 
         while (True):
             if 'NextToken' not in response:
@@ -428,16 +431,9 @@ def app():
                 NextToken=response['NextToken']
             )
             for r in response['Parameters']:
-                if not quietMode:
-                    logging.info("Loaded: SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace(
-                        "/", "_").upper())
-                os.environ[
-                    "SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/",
-                                                                                                                 "_").upper()] = \
-                    r['Value']
-
-    if os.getenv('AENV_QUIET') is None and os.getenv('CREDO_NO_AWS') == 'true':
-        printInfo()
+                if verboseMode:
+                    logging.info("Loaded: SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/", "_").upper())
+                os.environ["SECRET_" + os.getenv('SERVICE').upper() + r['Name'].split(os.getenv('SERVICE'))[-1].replace("/", "_").upper()] = r['Value']
 
     isWindows = False
     if os.name == 'nt':
