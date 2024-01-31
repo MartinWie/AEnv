@@ -58,24 +58,24 @@ All current options:
 aenv [-s <service/application>] [-i] [-n] [-e <env>] [-t <2fa key>] [-T] [-Y] [-u <aws username>] [-a <account number>] [-p <aws profile>] [-r <region>] <command>
 ```
 
-| Option | explanation | sample | comment 
-| : | :- | :- | :-
-|-h | Shows help | aenv -h |
-|-i | Starts aenv in interactive mode | aenv -i | Gives you a command line that you can interact with |
-|-s \<service/application> | For which service should the environment variables be loaded? | aenv -s CustomerService
-|-S | Sets a default service for aenv and writes it to a config file | aenv -S CustomerService | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant 
-|-n | Do not query the parameter store at all  | aenv -n | Can be used to auth the current session with MFA
-|-e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | aenv -e Prod | 
-|-t \<2fa key> | Takes the 2FA key from your aws account | aenv -t 987123
-|-T | Lets you type in the 2FA key from your aws account during runtime | aenv -T | When you run your command aenv will ask for the token |
-|-Y | Uses Yubikey for MFA auth | aenv -Y | During runtime aenv will use ykman to fetch the MFA-Key from your yubikey
-|-r \<region> | Overwrites temporary the awscli default region | aenv -r eu-central-1 | aenv will use the given region for example Frankfurt
-|-v | Verbose mode (more output) | aenv -v |
-|-u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -u user@example.de |
-|-a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | aenv -a 999999999999 | 
-|-p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile | aenv -p testUser1
-|-c \<aws profile> | Container mode(enable this to make aenv work in ecs and codebuild) | aenv -c | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html)
-|\<command> | Is the command to execute with environment variables injected. | aenv code | Will run VS Code with access to given environment variables
+| Option | Explanation | Sample | Comment |
+| ------ | ----------- | ------ | ------- |
+| -h | Shows help | `aenv -h` | |
+| -i | Starts aenv in interactive mode | `aenv -i` | Gives you a command line that you can interact with |
+| -s \<service/application> | For which service should the environment variables be loaded? | `aenv -s CustomerService` | |
+| -S | Sets a default service for aenv and writes it to a config file | `aenv -S CustomerService` | from now on "CustomerService" is the default service which means "-s CustomerService" is redundant |
+| -n | Do not query the parameter store at all  | `aenv -n` | Can be used to auth the current session with MFA |
+| -e \<env> | For which environment should the environment variables be loaded? For example Dev, Test or Prod (permission required) | `aenv -e Prod` | |
+| -t \<2fa key> | Takes the 2FA key from your aws account | `aenv -t 987123` | |
+| -T | Lets you type in the 2FA key from your aws account during runtime | `aenv -T` | When you run your command aenv will ask for the token |
+| -Y | Uses Yubikey for MFA auth | `aenv -Y` | During runtime aenv will use ykman to fetch the MFA-Key from your yubikey |
+| -r \<region> | Overwrites temporary the awscli default region | `aenv -r eu-central-1` | aenv will use the given region for example Frankfurt |
+| -v | Verbose mode (more output) | `aenv -v` | |
+| -u \<aws username> | Sets a specific username combined with -a gives you a faster runtime (otherwise this data needs to be retrieved via aws) | `aenv -u user@example.de` | |
+| -a \<account number> | Sets a specific account number combined with -u gives you a faster runtime (otherwise this data needs to be retrieved via aws) | `aenv -a 999999999999` | |
+| -p \<aws profile> | If multiple aws profiles are available you can choose the profile otherwise aenv will use the default profile | `aenv -p testUser1` | |
+| -c \<aws profile> | Container mode(enable this to make aenv work in ecs and codebuild) | `aenv -c` | [permissions](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html) |
+| \<command> | Is the command to execute with environment variables injected. | `aenv code` | Will run VS Code with access to given environment variables |
 
 
 

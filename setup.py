@@ -27,9 +27,9 @@ setup(name='aenv',
           'Operating System :: OS Independent'
       ],
       url='https://github.com/MartinWie/AEnv',
-      author='MartinWiechmann',
-      author_email='martin.wiechmann.office@gmail.com',
-      keywords='aws credo security parameterstore ssm cloud password aenv',
+      author='MartinWie',
+      author_email='donotsuspend@googlegroups.com',
+      keywords='aws aenv security parameterstore ssm cloud password',
       license='MIT',
       packages=['aenv'],
       install_requires=[
