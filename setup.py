@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='aenv',
-      version='2.0.6',
+      version='2.0.7',
       description='A Python 3 tool to fetch secure strings from the aws parameter store and injecting those into environment variables.',
       long_description=readme(),
       long_description_content_type='text/markdown',
